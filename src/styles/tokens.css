@@ -1,0 +1,109 @@
+/* ==========================================================================
+   DESIGN TOKENS
+   One file to re-skin the whole site. Themes switch via [data-theme] and
+   accents via [data-accent] on <html> (try the ⌘K menu → "Cycle accent").
+   ========================================================================== */
+
+:root {
+  /* ---- Typefaces --------------------------------------------------------
+     Display/body: Bricolage Grotesque (variable: weight + optical size)
+     Accent:       Instrument Serif italic, used for *emphasis* in copy
+     Technical:    JetBrains Mono, for labels, code, metadata          */
+  --font-sans: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Instrument Serif', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, 'Cascadia Code', Menlo, monospace;
+
+  /* ---- Fluid type scale: linear from 360px → 1440px viewport ----------- */
+  --text-xs: clamp(0.6875rem, 0.6667rem + 0.0926vw, 0.75rem);  /* 11 → 12  */
+  --text-sm: clamp(0.8125rem, 0.7917rem + 0.0926vw, 0.875rem); /* 13 → 14  */
+  --text-base: clamp(1rem, 0.9583rem + 0.1852vw, 1.125rem);    /* 16 → 18  */
+  --text-lg: clamp(1.125rem, 1.0417rem + 0.3704vw, 1.375rem);  /* 18 → 22  */
+  --text-xl: clamp(1.375rem, 1.2083rem + 0.7407vw, 1.875rem);  /* 22 → 30  */
+  --text-2xl: clamp(1.75rem, 1.4167rem + 1.4815vw, 2.75rem);   /* 28 → 44  */
+  --text-3xl: clamp(2.25rem, 1.6667rem + 2.5926vw, 4rem);      /* 36 → 64  */
+  --text-4xl: clamp(2.75rem, 1.6667rem + 4.8148vw, 6rem);      /* 44 → 96  */
+  --text-display: clamp(3rem, 1.6rem + 6.2vw, 7.25rem);       /* 48 → 115  section titles */
+  --text-hero: clamp(5.25rem, 1.5833rem + 16.2963vw, 16.25rem); /* 84 → 260 */
+
+  --leading-tight: 0.92;
+  --leading-snug: 1.15;
+  --leading-body: 1.6;
+  --tracking-display: -0.035em;
+  --tracking-mono: 0.02em;
+  --tracking-caps: 0.12em;
+
+  /* ---- Space ------------------------------------------------------------ */
+  --space-3xs: 0.25rem;
+  --space-2xs: 0.5rem;
+  --space-xs: 0.75rem;
+  --space-s: 1rem;
+  --space-m: 1.5rem;
+  --space-l: 2rem;
+  --space-xl: 3rem;
+  --space-2xl: 4.5rem;
+  --space-3xl: 7rem;
+  --section-pad: clamp(5rem, 3rem + 6vw, 9rem);
+
+  /* ---- Layout ----------------------------------------------------------- */
+  --maxw: 1440px;
+  --gutter: clamp(1.25rem, 0.75rem + 2.4vw, 3rem);
+  --hud-h: 3.5rem;
+  --rail-w: 0px; /* becomes 76px on desktop, see bottom of file */
+  --radius: 0px; /* the system is deliberately sharp; raise this for a softer look */
+
+  /* ---- Motion ----------------------------------------------------------- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 160ms;
+  --dur-base: 320ms;
+  --dur-slow: 800ms;
+}
+
+/* ---- Accents (fill colours; text-safe variants derived per theme) ------- */
+:root,
+[data-accent='signal'] { --accent-fill: #ff5b24; }
+[data-accent='acid']   { --accent-fill: #c8f23a; }
+[data-accent='ion']    { --accent-fill: #5b8cff; }
+[data-accent='plasma'] { --accent-fill: #ff4fa3; }
+
+/* ---- Themes ------------------------------------------------------------- */
+:root,
+[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0d0d0c;
+  --bg-elev: #141413;
+  --surface: #1b1b19;
+  --surface-2: #232320;
+  --text: #ede9e0;
+  --text-muted: #a19d93;
+  --text-dim: #6b6862;
+  --line: rgb(237 233 224 / 0.11);
+  --line-strong: rgb(237 233 224 / 0.24);
+  --accent: var(--accent-fill);                 /* accent used as text */
+  --on-accent: #0d0d0c;                         /* text placed on accent fill */
+  --grain-opacity: 0.07;
+  --shadow: 0 30px 80px -20px rgb(0 0 0 / 0.7);
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+  --bg: #eeeae1;
+  --bg-elev: #e7e2d7;
+  --surface: #e0dacd;
+  --surface-2: #d6cfbf;
+  --text: #141412;
+  --text-muted: #57544d;
+  --text-dim: #8b877d;
+  --line: rgb(20 20 18 / 0.13);
+  --line-strong: rgb(20 20 18 / 0.28);
+  --accent: color-mix(in oklab, var(--accent-fill) 64%, #000); /* darkened for text contrast */
+  --on-accent: #0d0d0c;
+  --grain-opacity: 0.05;
+  --shadow: 0 30px 80px -24px rgb(40 30 10 / 0.35);
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --rail-w: 76px;
+  }
+}

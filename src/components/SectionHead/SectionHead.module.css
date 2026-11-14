@@ -1,0 +1,108 @@
+.head {
+  margin-bottom: clamp(3rem, 2rem + 4vw, 6rem);
+}
+
+/* +── 02 /api ──────────── Capabilities ──+ */
+.meta {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-s);
+  padding-top: var(--space-s);
+  border-top: 1px solid var(--line-strong);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-mono);
+  text-transform: uppercase;
+}
+
+/* crosshair marks at both ends of the rule */
+.meta::before,
+.meta::after {
+  content: '+';
+  position: absolute;
+  top: 0;
+  translate: 0 -54%;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  line-height: 1;
+  color: var(--text-muted);
+  background: var(--bg);
+  padding-inline: 0.1rem;
+}
+
+.meta::before {
+  left: -0.4rem;
+}
+
+.meta::after {
+  right: -0.4rem;
+}
+
+.index {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.layer {
+  color: var(--text);
+}
+
+.rule {
+  flex: 1;
+  height: 1px;
+  background: repeating-linear-gradient(90deg, var(--line-strong) 0 4px, transparent 4px 8px);
+}
+
+.label {
+  color: var(--text-muted);
+}
+
+.body {
+  display: grid;
+  gap: var(--space-m);
+  margin-top: clamp(1.75rem, 1rem + 2.5vw, 3.5rem);
+}
+
+/* title runs the full measure; the lede tucks under it on the right */
+@media (min-width: 1024px) {
+  .body {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--gutter);
+  }
+
+  .titleCol {
+    grid-column: 1 / -1;
+  }
+
+  .lede {
+    grid-column: 8 / -1;
+  }
+}
+
+.eyebrow {
+  margin-bottom: var(--space-s);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.title {
+  font-size: var(--text-display);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: -0.045em;
+  max-width: 20ch;
+}
+
+.title em {
+  color: var(--accent);
+  letter-spacing: -0.02em;
+}
+
+.lede {
+  max-width: 34ch;
+  font-size: var(--text-lg);
+  line-height: 1.45;
+  color: var(--text-muted);
+}

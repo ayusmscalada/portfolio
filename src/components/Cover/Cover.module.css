@@ -1,0 +1,108 @@
+.cover {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  isolation: isolate;
+  color: var(--text);
+  background: var(--surface);
+}
+
+.cover svg,
+.image {
+  width: 100%;
+  height: 100%;
+}
+
+.image {
+  object-fit: cover;
+}
+
+/* corner crop-marks */
+.cover::before,
+.cover::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--text-muted);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.cover::before {
+  top: 10px;
+  right: 10px;
+  border-width: 1px 1px 0 0;
+}
+
+.cover::after {
+  bottom: 10px;
+  left: 10px;
+  border-width: 0 0 1px 1px;
+}
+
+.stroke {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+  opacity: 0.55;
+}
+
+.hair {
+  stroke: currentColor;
+  stroke-width: 0.75;
+  opacity: 0.2;
+}
+
+.ink {
+  fill: currentColor;
+  opacity: 0.8;
+}
+
+.inkSoft {
+  fill: currentColor;
+  opacity: 0.35;
+}
+
+.inkDim {
+  fill: currentColor;
+  opacity: 0.16;
+}
+
+.accent {
+  fill: var(--accent-fill);
+}
+
+.accentStroke {
+  fill: none;
+  stroke: var(--accent-fill);
+  stroke-width: 2.25;
+}
+
+.svgLabel {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  fill: currentColor;
+  opacity: 0.5;
+}
+
+.tag {
+  position: absolute;
+  z-index: 1;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: var(--tracking-mono);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.tl {
+  top: 12px;
+  left: 14px;
+}
+
+.br {
+  bottom: 12px;
+  right: 14px;
+}

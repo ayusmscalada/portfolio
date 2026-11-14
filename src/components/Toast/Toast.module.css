@@ -1,0 +1,45 @@
+.region {
+  position: fixed;
+  left: 50%;
+  bottom: var(--space-l);
+  z-index: 90;
+  translate: -50% 0;
+  pointer-events: none;
+}
+
+.toast {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 0.7rem 1rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  color: var(--bg);
+  background: var(--text);
+  box-shadow: var(--shadow);
+  animation: toast 2.6s var(--ease-out) both;
+}
+
+.code {
+  padding: 0.1rem 0.4rem;
+  background: var(--accent-fill);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+
+@keyframes toast {
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  12%,
+  85% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en" data-theme="dark" data-accent="signal">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>%PROFILE_TITLE%</title>
+    <meta name="description" content="%PROFILE_DESCRIPTION%" />
+    <meta name="author" content="%PROFILE_NAME%" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="%PROFILE_TITLE%" />
+    <meta property="og:description" content="%PROFILE_DESCRIPTION%" />
+    <meta name="theme-color" content="#0d0d0c" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script>
+      // Apply saved theme/accent before first paint (no flash).
+      ;(function () {
+        try {
+          var root = document.documentElement
+          var theme = localStorage.getItem('theme')
+          if (!theme) theme = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
+          root.dataset.theme = theme
+          var accent = localStorage.getItem('accent')
+          if (accent) root.dataset.accent = accent
+        } catch (e) {}
+      })()
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

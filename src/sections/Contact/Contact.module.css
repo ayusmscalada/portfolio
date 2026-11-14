@@ -1,0 +1,214 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+  padding-top: var(--section-pad);
+  overflow: hidden;
+}
+
+/* ---- email ------------------------------------------------------------------- */
+
+.emailRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-m) var(--space-l);
+  margin-bottom: clamp(3rem, 2rem + 5vw, 7rem);
+}
+
+.email {
+  position: relative;
+  font-size: clamp(1.75rem, 0.6rem + 5.2vw, 6rem);
+  font-weight: 300;
+  line-height: 1.05;
+  letter-spacing: -0.05em;
+  overflow-wrap: anywhere;
+  transition: font-weight 0.6s var(--ease-out), color var(--dur-fast);
+}
+
+.email::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.06em;
+  height: 0.05em;
+  min-height: 2px;
+  background: var(--accent-fill);
+  transform: scaleX(0.12);
+  transform-origin: left;
+  transition: transform 0.8s var(--ease-out);
+}
+
+.email:hover {
+  font-weight: 550;
+}
+
+.email:hover::after {
+  transform: scaleX(1);
+}
+
+.copy {
+  padding: 0.7rem 1.1rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-mono);
+  text-transform: uppercase;
+  transition: background-color var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast);
+}
+
+.copy:hover {
+  background: var(--accent-fill);
+  border-color: var(--accent-fill);
+  color: var(--on-accent);
+}
+
+/* ---- headers + socials ------------------------------------------------------- */
+
+.grid {
+  display: grid;
+  gap: var(--space-xl) var(--gutter);
+  align-items: start;
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  }
+
+  .elsewhere {
+    grid-column: 2;
+  }
+}
+
+.headers {
+  padding: var(--space-m);
+  border: 1px solid var(--line);
+  background: var(--bg-elev);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: 1.6;
+}
+
+.statusLine {
+  padding-bottom: var(--space-xs);
+  margin-bottom: var(--space-xs);
+  border-bottom: 1px dashed var(--line-strong);
+}
+
+.ok {
+  padding: 0.1rem 0.4rem;
+  background: var(--accent-fill);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+
+.headers dl > div {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 0.6rem;
+  padding-block: 0.3rem;
+}
+
+.headers dt {
+  color: var(--text-dim);
+}
+
+.headers dd {
+  color: var(--text);
+}
+
+.socials {
+  margin-top: var(--space-s);
+  border-top: 1px solid var(--line-strong);
+}
+
+.social {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 1.5rem;
+  align-items: baseline;
+  gap: var(--space-s);
+  padding-block: 1.1rem;
+  border-bottom: 1px solid var(--line);
+  transition: padding var(--dur-base) var(--ease-out), color var(--dur-fast);
+}
+
+.socialLabel {
+  font-size: var(--text-xl);
+  letter-spacing: -0.02em;
+}
+
+.handle {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.arrow {
+  justify-self: end;
+  color: var(--text-dim);
+  transition: transform 0.5s var(--ease-out), color var(--dur-fast);
+}
+
+.social:hover {
+  padding-left: 0.75rem;
+}
+
+.social:hover .arrow {
+  color: var(--accent);
+  transform: rotate(45deg);
+}
+
+/* ---- footer ------------------------------------------------------------------- */
+
+.footer {
+  margin-top: auto;
+  padding-top: clamp(4rem, 2rem + 6vw, 8rem);
+  container-type: inline-size;
+}
+
+.footerRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-s) var(--space-l);
+  padding-block: var(--space-m);
+  border-top: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-mono);
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.footerActions {
+  display: flex;
+  gap: var(--space-m);
+}
+
+.footerActions button {
+  text-transform: uppercase;
+  letter-spacing: inherit;
+  transition: color var(--dur-fast);
+}
+
+.footerActions button:hover {
+  color: var(--accent);
+}
+
+/* outlined signature, cropped by the bottom edge */
+.wordmark {
+  font-size: min(15rem, calc(96cqi / (var(--chars) * 0.66)));
+  font-weight: 700;
+  line-height: 0.75;
+  letter-spacing: -0.06em;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--line-strong);
+  margin-bottom: -0.12em;
+  user-select: none;
+}

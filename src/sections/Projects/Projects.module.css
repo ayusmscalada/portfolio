@@ -1,0 +1,283 @@
+.section {
+  padding-block: var(--section-pad);
+}
+
+/* ---- SQL console ----------------------------------------------------------- */
+
+.console {
+  margin-bottom: var(--space-xl);
+  border: 1px solid var(--line-strong);
+  background: var(--bg-elev);
+}
+
+.consoleBar {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-s);
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-mono);
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.sql {
+  padding: 1.15rem 1rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+
+@media (min-width: 1024px) {
+  .sql {
+    font-size: var(--text-base);
+  }
+}
+
+.prompt {
+  color: var(--text-dim);
+}
+
+.kw {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.lit {
+  color: var(--accent);
+}
+
+.fn {
+  color: var(--text);
+}
+
+.where {
+  animation: typeIn 0.5s var(--ease-out);
+}
+
+@keyframes typeIn {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+  }
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0 1rem 1rem;
+}
+
+.chip {
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-mono);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  transition: background-color var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast);
+}
+
+.chip:hover {
+  border-color: var(--text);
+  color: var(--text);
+}
+
+.chip[aria-pressed='true'] {
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--bg);
+}
+
+/* ---- record list --------------------------------------------------------------- */
+
+.list {
+  border-top: 1px solid var(--line-strong);
+}
+
+.row {
+  border-bottom: 1px solid var(--line);
+}
+
+.rowEnter {
+  animation: rowIn 0.7s var(--ease-out) backwards;
+  animation-delay: calc(var(--i) * 60ms);
+}
+
+@keyframes rowIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+.rowBtn {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 2.75rem minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: var(--space-s);
+  padding-block: clamp(1.25rem, 0.75rem + 1.8vw, 2.4rem);
+  text-align: left;
+  transition: opacity 0.4s var(--ease-out);
+}
+
+@media (min-width: 1024px) {
+  .rowBtn {
+    grid-template-columns: 4rem minmax(0, 6fr) minmax(0, 3fr) 4.5rem 2rem;
+    column-gap: var(--gutter);
+  }
+}
+
+/* spotlight: dim siblings while one row is hovered */
+@media (hover: hover) and (pointer: fine) {
+  .list:hover .rowBtn:not(:hover) {
+    opacity: 0.3;
+  }
+}
+
+.idx {
+  align-self: start;
+  padding-top: 0.6em;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+}
+
+.titleCol {
+  min-width: 0;
+}
+
+.title {
+  display: block;
+  font-size: var(--text-4xl);
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: -0.05em;
+  transition: transform 0.7s var(--ease-out), font-weight 0.7s var(--ease-out);
+}
+
+.kicker {
+  display: block;
+  margin-top: 0.6rem;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: var(--text-lg);
+  color: var(--text-muted);
+  transition: transform 0.7s var(--ease-out) 0.04s;
+}
+
+.rowBtn:hover .title,
+.rowBtn:focus-visible .title {
+  transform: translateX(0.75rem);
+  font-weight: 650;
+}
+
+.rowBtn:hover .kicker,
+.rowBtn:focus-visible .kicker {
+  transform: translateX(0.75rem);
+}
+
+.tags {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .tags {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-mono);
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+}
+
+.year {
+  display: none;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+
+@media (min-width: 1024px) {
+  .year {
+    display: block;
+  }
+}
+
+.arrow {
+  justify-self: end;
+  font-size: var(--text-xl);
+  color: var(--text-dim);
+  transition: transform 0.5s var(--ease-out), color var(--dur-fast);
+}
+
+.rowBtn:hover .arrow,
+.rowBtn:focus-visible .arrow {
+  color: var(--accent);
+  transform: rotate(45deg);
+}
+
+/* inline cover on touch / small screens; desktop uses the floating preview */
+.thumb {
+  grid-column: 1 / -1;
+  margin-top: var(--space-m);
+  aspect-ratio: 16 / 9;
+}
+
+@media (hover: hover) and (pointer: fine) and (min-width: 1024px) {
+  .thumb {
+    display: none;
+  }
+}
+
+/* ---- floating hover preview ------------------------------------------------------ */
+
+.preview {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 30;
+  width: clamp(16rem, 12rem + 10vw, 24rem);
+  pointer-events: none;
+  will-change: transform;
+}
+
+.previewInner {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  translate: 2.5rem -50%;
+  opacity: 0;
+  scale: 0.8;
+  box-shadow: var(--shadow);
+  transition:
+    opacity 0.3s ease,
+    scale 0.5s var(--ease-out),
+    translate 0.6s var(--ease-out);
+}
+
+.preview[data-visible='true'] .previewInner {
+  opacity: 1;
+  scale: 1;
+}
+
+.preview[data-flip='true'] .previewInner {
+  translate: calc(-100% - 2.5rem) -50%;
+}
+
+.previewCover {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.previewCover[data-active='true'] {
+  opacity: 1;
+}
