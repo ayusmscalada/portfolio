@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="dark" data-accent="signal">
+<html lang="en" data-theme="dark" data-accent="signal" data-motion="full">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,16 +9,17 @@
     <meta property="og:type" content="website" />
     <meta property="og:title" content="%PROFILE_TITLE%" />
     <meta property="og:description" content="%PROFILE_DESCRIPTION%" />
-    <meta name="theme-color" content="#0d0d0c" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#050a14" />
+    <link rel="icon" type="image/svg+xml" href="%PROFILE_FAVICON%" />
     <script>
       // Apply saved theme/accent before first paint (no flash).
       ;(function () {
         try {
           var root = document.documentElement
           var theme = localStorage.getItem('theme')
-          if (!theme) theme = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
+          if (!theme) theme = 'dark'
           root.dataset.theme = theme
+          root.dataset.motion = localStorage.getItem('motion') || 'full'
           var accent = localStorage.getItem('accent')
           if (accent) root.dataset.accent = accent
         } catch (e) {}

@@ -1,0 +1,118 @@
+.wrap {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  aspect-ratio: 1;
+  margin-inline: auto;
+  perspective: 900px;
+}
+
+/* Soft halo behind the disc (static gradient: no filter cost). */
+.wrap::before {
+  content: '';
+  position: absolute;
+  inset: -12%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(56 189 248 / 0.22), rgb(99 102 241 / 0.08) 45%, transparent 68%);
+  pointer-events: none;
+}
+
+.tilt {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.5s var(--ease-out);
+  will-change: transform;
+}
+
+.svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.letter,
+.letterGlow {
+  font-family: var(--font-sans);
+  font-weight: 850;
+  letter-spacing: -0.02em;
+}
+
+.letterGlow {
+  opacity: 0.32;
+}
+
+.arcLabel {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.32em;
+  fill: #7dd3fc;
+}
+
+.orbitA,
+.orbitB,
+.core,
+.flare,
+.trace,
+.traceGlow,
+.spark,
+.letterGlow {
+  transform-box: view-box;
+  transform-origin: 200px 200px;
+}
+
+.spark {
+  fill: #bae6fd;
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .orbitA { animation: spin 60s linear infinite; }
+  .orbitB { animation: spin 14s linear infinite reverse; }
+  .core { animation: breathe 4.5s ease-in-out infinite; }
+  .flare { animation: flare 4.5s ease-in-out infinite; }
+  .letterGlow { animation: glow 4.5s ease-in-out infinite; }
+  .trace,
+  .traceGlow {
+    stroke-dasharray: 90 910;
+    animation: trace 5s linear infinite;
+  }
+  .traceGlow { opacity: 0.35; }
+  .spark { animation: spark 4.2s ease-out infinite; }
+
+  .wrap .svg * { animation-play-state: paused; }
+  .wrap[data-active='true'] .svg * { animation-play-state: running; }
+}
+
+/* Static fallback when motion is reduced: show the full crest outline lit. */
+@media (prefers-reduced-motion: reduce) {
+  .trace { stroke-opacity: 0.5; }
+  .traceGlow { display: none; }
+  .tilt { transition: none; transform: none; }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes breathe { 0%, 100% { opacity: 0.65; transform: scale(0.96); } 50% { opacity: 1; transform: scale(1.04); } }
+@keyframes flare { 0%, 100% { opacity: 0.55; transform: scaleX(0.92); } 50% { opacity: 1; transform: scaleX(1.05); } }
+@keyframes glow { 0%, 100% { opacity: 0.22; } 50% { opacity: 0.45; } }
+@keyframes trace { to { stroke-dashoffset: -1000; } }
+@keyframes spark {
+  0% { opacity: 0; transform: translateY(0); }
+  20% { opacity: 0.9; }
+  100% { opacity: 0; transform: translateY(-26px); }
+}
+
+/* Compact badge used in the navigation. */
+.mark {
+  display: inline-block;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  filter: drop-shadow(0 0 8px rgb(56 189 248 / 0.35));
+}
+
+.mark .svg {
+  overflow: hidden;
+  border-radius: 50%;
+}

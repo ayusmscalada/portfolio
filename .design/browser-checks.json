@@ -1,0 +1,17 @@
+{
+  "checks": [
+    "Two featured projects",
+    "Hero navigation",
+    "Case study open, next, Escape",
+    "Archive and technology filter",
+    "Theme toggle and persistence",
+    "Capabilities accordion",
+    "Copy email",
+    "Keyboard command menu and search",
+    "No page overflow at 375, 390, 768, 1024, 1488px",
+    "Mobile navigation",
+    "Images loaded; no browser console errors"
+  ],
+  "errors": [],
+  "overflow": []
+}

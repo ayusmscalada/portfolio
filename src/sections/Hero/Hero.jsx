@@ -1,96 +1,86 @@
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { ArrowDown, ArrowUpRight } from '@/components/ph.jsx'
 import { profile, fullName } from '@/data/profile.js'
-import { KineticText } from '@/components/KineticText/KineticText.jsx'
-import { TypeLine } from '@/components/motion/TypeLine.jsx'
-import { Reveal } from '@/components/motion/Reveal.jsx'
-import { Rich } from '@/lib/rich.jsx'
-import { scrollToId } from '@/lib/scrollTo.js'
-import { cx } from '@/lib/cx.js'
+import { ParticleCore } from '@/components/ParticleCore/ParticleCore.jsx'
+import { SplitText } from '@/components/motion/SplitText.jsx'
+import { useReducedMotion } from '@/hooks/useMediaQuery.js'
 import s from './Hero.module.css'
 
-function Seal() {
-  const text = `open to work · ${profile.role} · est. ${profile.since} · `
+/** Cycles through phrases; every phrase is in the DOM so width never jumps. */
+function RotatingWord({ words }) {
+  const [i, setI] = useState(0)
+  const reduced = useReducedMotion()
+  useEffect(() => {
+    if (reduced || words.length < 2) return
+    const id = setInterval(() => setI((n) => (n + 1) % words.length), 2600)
+    return () => clearInterval(id)
+  }, [reduced, words.length])
   return (
-    <div className={s.seal} aria-hidden="true">
-      <svg viewBox="0 0 200 200" className={s.sealRing}>
-        <defs>
-          <path id="seal-path" d="M100,100 m-80,0 a80,80 0 1,1 160,0 a80,80 0 1,1 -160,0" />
-        </defs>
-        <text className={s.sealText}>
-          <textPath href="#seal-path" textLength="500" lengthAdjust="spacing">
-            {text.toUpperCase()}
-          </textPath>
-        </text>
-      </svg>
-      <span className={s.sealCore}>↓</span>
-    </div>
+    <span className={s.rotator}>
+      <span className="sr-only">{words.join(', ')}</span>
+      {words.map((w, n) => (
+        <span key={w} className={s.word} data-state={n === i ? 'in' : n === (i - 1 + words.length) % words.length ? 'out' : 'idle'} aria-hidden="true">
+          {w}
+        </span>
+      ))}
+    </span>
   )
 }
 
 export function Hero() {
-  // Longest line (+ indent on line 2) drives the fit-to-width font size.
-  const chars = Math.max(profile.firstName.length, profile.lastName.length + 2)
+  const hostRef = useRef(null)
+  const [stats, setStats] = useState(null)
+  const onStats = useCallback((st) => setStats(st), [])
 
   return (
-    <section id="top" className={s.hero} aria-labelledby="hero-title">
-      <div className={cx('wrap', s.inner)}>
-        <div className={s.request}>
-          <span className={s.reqDot} aria-hidden="true" />
-          <TypeLine className={s.reqText} text={`GET / HTTP/2 · host: ${profile.domain} · from: you`} />
-          <span className={s.reqMeta}>v{new Date().getFullYear()}.1</span>
-        </div>
+    <section ref={hostRef} id="top" className={s.hero} aria-labelledby="hero-title">
+      <div className={s.grid} aria-hidden="true" />
+      <ParticleCore hostRef={hostRef} onStats={onStats} />
 
-        <div className={s.nameWrap}>
-          <h1 id="hero-title" className={s.name} style={{ '--chars': chars }}>
-            <span className="sr-only">
-              {fullName}, {profile.role}
-            </span>
-            <KineticText lines={[profile.firstName, profile.lastName]} tail="." />
-          </h1>
-          {profile.availability.open && <Seal />}
-        </div>
+      <div className={s.content}>
+        <p className={s.badge}>
+          <span className={s.dot} aria-hidden="true" />
+          {profile.availability.open ? profile.availability.short : 'Busy'}
+          <span className={s.sep} aria-hidden="true" />
+          {profile.role}
+        </p>
 
-        <div className={s.bottom}>
-          <Reveal className={s.intro} delay={700}>
-            <p className={s.role}>
-              <span className={s.roleIdx}>[{profile.role}]</span>
-            </p>
-            <p className={s.tagline}>
-              <Rich text={profile.tagline} />
-            </p>
-            <a
-              href="#about"
-              className={s.cue}
-              onClick={(e) => {
-                e.preventDefault()
-                scrollToId('about')
-              }}
-            >
-              <span className={s.cueTrack} aria-hidden="true">
-                <span className={s.cueDot} />
-              </span>
-              Scroll to send the request
-            </a>
-          </Reveal>
+        <SplitText as="h1" id="hero-title" text={profile.headline} className={s.title} delay={150} />
 
-          <Reveal as="dl" className={s.meta} delay={850}>
-            <div>
-              <dt>Based in</dt>
-              <dd>{profile.location}</dd>
-            </div>
-            <div>
-              <dt>Status</dt>
-              <dd>
-                <span className={s.statusDot} data-open={profile.availability.open} aria-hidden="true" />
-                {profile.availability.label}
-              </dd>
-            </div>
-            <div>
-              <dt>Stack</dt>
-              <dd>{profile.focus.join(' · ')}</dd>
-            </div>
-          </Reveal>
+        <p className={s.building}>
+          <span className={s.prompt} aria-hidden="true">&gt;</span> I build <RotatingWord words={profile.building} />
+        </p>
+
+        <p className={s.summary}>
+          {fullName} — {profile.role.toLowerCase()} shipping fast, reliable products with {profile.focus.slice(0, -1).join(', ')} and {profile.focus.at(-1)}.
+        </p>
+
+        <div className={s.actions}>
+          <a className={s.primary} href="#projects" data-magnetic>
+            Explore my work <ArrowUpRight size={17} weight="bold" />
+          </a>
+          <a className={s.secondary} href="#contact" data-magnetic>
+            Start a conversation <ArrowUpRight size={17} weight="bold" />
+          </a>
         </div>
       </div>
+
+      <div className={s.telemetry} aria-hidden="true">
+        <span className={s.teleRow}>
+          <span className={s.teleDot} data-on={!!stats && !stats.paused && !stats.fallback} />
+          core {stats?.fallback ? 'static' : stats && !stats.paused ? 'online' : 'idle'}
+        </span>
+        <span className={s.teleRow}>{stats?.count ? stats.count.toLocaleString('en-US') : '—'} particles</span>
+        <span className={s.teleRow}>{stats?.fps ? `${stats.fps} fps` : '— fps'}</span>
+        <span className={s.teleHint}>move · click to pulse · scroll to unfold</span>
+      </div>
+
+      <a className={s.scroll} href="#about">
+        <span>Scroll to explore</span>
+        <span className={s.scrollTrack}>
+          <ArrowDown size={14} />
+        </span>
+      </a>
     </section>
   )
 }

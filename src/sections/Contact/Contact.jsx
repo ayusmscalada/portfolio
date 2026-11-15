@@ -1,7 +1,11 @@
+import { ArrowUp, Copy, EnvelopeSimple } from '@/components/ph.jsx'
 import { profile, fullName } from '@/data/profile.js'
 import { useUI } from '@/context/UIContext.jsx'
 import { SectionHead } from '@/components/SectionHead/SectionHead.jsx'
 import { Reveal } from '@/components/motion/Reveal.jsx'
+import { Clock } from '@/components/Clock/Clock.jsx'
+import { Emblem } from '@/components/Emblem/Emblem.jsx'
+import { socialIcons } from '@/components/icons.js'
 import { scrollToId } from '@/lib/scrollTo.js'
 import { modKey } from '@/lib/platform.js'
 import s from './Contact.module.css'
@@ -10,91 +14,72 @@ export function Contact() {
   const { copyEmail, openPalette } = useUI()
   const year = new Date().getFullYear()
 
-  const headers = [
-    ['content-type', 'application/collaboration'],
-    ['x-availability', profile.availability.open ? profile.availability.label : 'Not available right now'],
-    ['x-location', `${profile.location} (${profile.timezoneLabel})`],
-    ['x-response-time', '< 24h'],
-    ['cache-control', 'no-templates, handcrafted'],
-  ]
-
   return (
     <section id="contact" className={s.section} aria-labelledby="contact-title">
+      <div className={s.glow} aria-hidden="true" />
       <div className="wrap">
-        <SectionHead id="contact" eyebrow="HTTP/2 200 OK · request complete — your move." title="Let's build something *worth* shipping." />
+        <SectionHead
+          id="contact"
+          badge="Contact"
+          title="Let's build something *worth* shipping."
+          lede="Have a product to launch, a system to scale, or a team to join? I reply within a day."
+        />
 
-        <Reveal className={s.emailRow}>
-          <a href={`mailto:${profile.email}`} className={s.email}>
-            {profile.email}
-          </a>
-          <button type="button" className={s.copy} onClick={copyEmail}>
-            Copy
-          </button>
-        </Reveal>
+        <Reveal className={s.panel} data-spot>
+          <div className={s.status}>
+            <span className={s.statusDot} data-open={profile.availability.open} aria-hidden="true" />
+            <span>{profile.availability.open ? profile.availability.label : 'Not taking new work right now'}</span>
+            <span className={s.localTime}>
+              Local time <Clock timeZone={profile.timezone} label={profile.timezoneLabel} />
+            </span>
+          </div>
 
-        <div className={s.grid}>
-          <Reveal className={s.headers} role="group" aria-label="Response headers">
-            <p className={s.statusLine}>
-              HTTP/2 <span className={s.ok}>200 OK</span>
-            </p>
-            <dl>
-              {headers.map(([k, v]) => (
-                <div key={k}>
-                  <dt>{k}:</dt>
-                  <dd>{v}</dd>
-                </div>
-              ))}
-            </dl>
-          </Reveal>
+          <div className={s.emailRow}>
+            <a href={`mailto:${profile.email}`} className={s.email}>
+              <EnvelopeSimple size={26} aria-hidden="true" />
+              {profile.email}
+            </a>
+            <button type="button" data-magnetic className={s.copy} onClick={copyEmail}>
+              <Copy size={16} /> Copy
+            </button>
+          </div>
 
-          <Reveal className={s.elsewhere} delay={120}>
-            <p className="label">Elsewhere</p>
-            <ul className={s.socials}>
-              {profile.socials.map((so) => (
+          <ul className={s.socials}>
+            {profile.socials.map((so) => {
+              const Icon = socialIcons[so.icon] ?? socialIcons.writing
+              return (
                 <li key={so.label}>
-                  <a href={so.url} target="_blank" rel="noopener noreferrer" className={s.social}>
-                    <span className={s.socialLabel}>{so.label}</span>
-                    <span className={s.handle}>{so.handle}</span>
-                    <span className={s.arrow} aria-hidden="true">
-                      ↗
-                    </span>
+                  <a href={so.url} target="_blank" rel="noopener noreferrer" className={s.social} aria-label={`${so.label}: ${so.handle}`}>
+                    <Icon size={20} />
+                    <span>{so.label}</span>
                   </a>
                 </li>
-              ))}
-              {profile.resumeUrl && (
-                <li>
-                  <a href={profile.resumeUrl} className={s.social} target="_blank" rel="noopener">
-                    <span className={s.socialLabel}>Résumé</span>
-                    <span className={s.handle}>PDF</span>
-                    <span className={s.arrow} aria-hidden="true">
-                      ↓
-                    </span>
-                  </a>
-                </li>
-              )}
-            </ul>
-          </Reveal>
-        </div>
+              )
+            })}
+            {profile.resumeUrl && (
+              <li>
+                <a href={profile.resumeUrl} className={s.social} target="_blank" rel="noopener">
+                  <span>Résumé ↓</span>
+                </a>
+              </li>
+            )}
+          </ul>
+        </Reveal>
       </div>
 
       <footer className={s.footer}>
         <div className={`wrap ${s.footerRow}`}>
-          <span>
-            © {year} {fullName}
+          <span className={s.sign}>
+            <Emblem variant="mark" />© {year} {fullName}
           </span>
-          <span className={s.built}>Designed &amp; built by hand · React + Vite</span>
-          <span className={s.footerActions}>
-            <button type="button" onClick={openPalette}>
-              {modKey}+K menu
-            </button>
-            <button type="button" onClick={() => scrollToId('top')}>
-              Back to top ↑
-            </button>
-          </span>
+          <span className={s.built}>Designed &amp; built by hand · React + WebGL</span>
+          <button type="button" className={s.kbd} onClick={openPalette}>
+            {modKey}+K
+          </button>
+          <button type="button" data-magnetic className={s.top} onClick={() => scrollToId('top')} aria-label="Back to top">
+            <ArrowUp size={20} weight="bold" />
+          </button>
         </div>
-        <p className={s.wordmark} style={{ '--chars': fullName.length }} aria-hidden="true">
-          {fullName}
-        </p>
       </footer>
     </section>
   )

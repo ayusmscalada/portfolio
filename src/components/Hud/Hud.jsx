@@ -1,89 +1,81 @@
-import { profile, fullName } from '@/data/profile.js'
+import { useEffect, useRef, useState } from 'react'
+import { List, Moon, Pause, Play, Sun } from '@/components/ph.jsx'
+import { fullName, profile } from '@/data/profile.js'
 import { sections } from '@/data/sections.js'
 import { useUI } from '@/context/UIContext.jsx'
 import { useScrollSpy } from '@/lib/scrollSpy.js'
-import { scrollToId } from '@/lib/scrollTo.js'
-import { modKey } from '@/lib/platform.js'
+import { navIcons } from '@/components/icons.js'
+import { Emblem } from '@/components/Emblem/Emblem.jsx'
 import { Clock } from '@/components/Clock/Clock.jsx'
 import s from './Hud.module.css'
 
-const initials = `${profile.firstName[0] ?? ''}${profile.lastName[0] ?? ''}`.toUpperCase()
-
-/** Isolated so only this tiny node re-renders on every scroll frame. */
-function Progress() {
-  const progress = useScrollSpy((st) => st.progress)
-  return <span className={s.progress} style={{ transform: `scaleX(${progress})` }} aria-hidden="true" />
-}
-
-function ThemeIcon() {
-  return (
-    <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" className={s.themeIcon}>
-      <circle cx="10" cy="10" r="7.25" fill="none" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M10 2.75a7.25 7.25 0 0 1 0 14.5Z" fill="currentColor" />
-    </svg>
-  )
-}
+const navSections = sections.filter((sec) => sec.nav !== false)
 
 export function Hud() {
-  const { theme, toggleTheme, openPalette } = useUI()
+  const { theme, toggleTheme, motion, toggleMotion, openPalette } = useUI()
   const index = useScrollSpy((st) => st.index)
-  const section = sections[index]
+  const scrolled = useScrollSpy((st) => st.progress > 0.002)
+  const active = sections[index]?.id
+  const navRef = useRef(null)
+  const [pill, setPill] = useState(null)
+
+  // Slide the glowing indicator under the active link. Measured in a frame
+  // callback (not a layout effect) so it never forces layout before first paint.
+  useEffect(() => {
+    let frame = 0
+    const measure = () => {
+      cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(() => {
+        const el = navRef.current?.querySelector('[aria-current]')
+        setPill(el ? { x: el.offsetLeft, w: el.offsetWidth } : null)
+      })
+    }
+    measure()
+    document.fonts?.ready.then(measure) // fonts can shift link widths
+    window.addEventListener('resize', measure)
+    return () => {
+      cancelAnimationFrame(frame)
+      window.removeEventListener('resize', measure)
+    }
+  }, [active])
 
   return (
-    <header className={s.hud}>
-      <a
-        href="#top"
-        className={s.brand}
-        onClick={(e) => {
-          e.preventDefault()
-          scrollToId('top')
-        }}
-        aria-label={`${fullName}, back to top`}
-      >
-        <span className={s.mark}>{initials}</span>
-        <span className={s.brandName}>{fullName}</span>
-      </a>
+    <header className={s.hud} data-scrolled={scrolled}>
+      <div className={s.bar}>
+        <span className={s.progress} aria-hidden="true" />
+        <a href="#top" className={s.brand} aria-label={`${fullName}, back to top`}>
+          <Emblem variant="mark" />
+        </a>
 
-      <div className={s.route} aria-hidden="true">
-        <span className={s.method}>GET</span>
-        <span key={section.id} className={s.routeSwap}>
-          <span className={s.path}>/{section.layer}</span>
-          <span className={s.sep}>→</span>
-          <span className={s.routeLabel}>{section.label}</span>
-        </span>
-      </div>
+        <nav ref={navRef} className={s.nav} aria-label="Main navigation">
+          {pill && <span className={s.pill} style={{ transform: `translateX(${pill.x}px)`, width: pill.w }} aria-hidden="true" />}
+          {navSections.map((sec) => {
+            const Icon = navIcons[sec.icon]
+            return (
+              <a key={sec.id} href={`#${sec.id}`} aria-current={active === sec.id ? 'location' : undefined}>
+                {Icon && <Icon size={15} weight={active === sec.id ? 'fill' : 'regular'} aria-hidden="true" />}
+                <span>{sec.label}</span>
+              </a>
+            )
+          })}
+        </nav>
 
-      <div className={s.tools}>
-        {profile.availability.open && (
-          <span className={s.status}>
-            <span className={s.pulse} aria-hidden="true" />
-            {profile.availability.short}
+        <div className={s.tools}>
+          <span className={s.live} title={profile.availability.label}>
+            <span className={s.liveDot} aria-hidden="true" />
+            <Clock timeZone={profile.timezone} label={profile.timezoneLabel} className={s.clock} />
           </span>
-        )}
-        <Clock className={s.clock} timeZone={profile.timezone} label={profile.timezoneLabel} />
-        <button
-          type="button"
-          className={s.iconBtn}
-          onClick={toggleTheme}
-          aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
-          data-theme-state={theme}
-        >
-          <ThemeIcon />
-        </button>
-        <button
-          type="button"
-          className={s.menuBtn}
-          onClick={openPalette}
-          aria-haspopup="dialog"
-          aria-keyshortcuts="Control+K Meta+K"
-        >
-          <span className={s.menuText}>Menu</span>
-          <kbd className={s.kbd}>{modKey}</kbd>
-          <kbd className={s.kbd}>K</kbd>
-        </button>
+          <button className={s.icon} onClick={toggleMotion} aria-label={motion === 'full' ? 'Pause animations' : 'Play animations'} title={motion === 'full' ? 'Pause animations' : 'Play animations'}>
+            {motion === 'full' ? <Pause size={15} weight="fill" /> : <Play size={15} weight="fill" />}
+          </button>
+          <button className={s.icon} onClick={toggleTheme} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}>
+            {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+          </button>
+          <button className={s.menu} onClick={openPalette} aria-label="Open navigation menu" aria-haspopup="dialog">
+            <List size={20} />
+          </button>
+        </div>
       </div>
-
-      <Progress />
     </header>
   )
 }

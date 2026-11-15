@@ -1,4 +1,5 @@
 import { useCallback, useSyncExternalStore } from 'react'
+import { isReducedMotion, subscribeMotion } from '@/lib/motion.js'
 
 export function useMediaQuery(query) {
   const subscribe = useCallback(
@@ -16,5 +17,6 @@ export function useMediaQuery(query) {
   )
 }
 
-export const useReducedMotion = () => useMediaQuery('(prefers-reduced-motion: reduce)')
+/** True when the site-wide motion switch is off (see lib/motion.js). */
+export const useReducedMotion = () => useSyncExternalStore(subscribeMotion, isReducedMotion, () => false)
 export const useFinePointer = () => useMediaQuery('(hover: hover) and (pointer: fine)')

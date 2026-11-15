@@ -1,5 +1,4 @@
 import { experience } from '@/data/experience.js'
-import { profile } from '@/data/profile.js'
 import { SectionHead } from '@/components/SectionHead/SectionHead.jsx'
 import { Reveal } from '@/components/motion/Reveal.jsx'
 import { shortSha } from '@/lib/hash.js'
@@ -7,76 +6,62 @@ import s from './Experience.module.css'
 
 export function Experience() {
   const { roles } = experience
-  const years = new Date().getFullYear() - profile.since
 
   return (
     <section id="experience" className={s.section} aria-labelledby="experience-title">
       <div className="wrap">
-        <SectionHead
-          id="experience"
-          eyebrow={`$ git log --graph --since=${profile.since}`}
-          title={experience.title}
-          lede={experience.lede}
-        />
+        <SectionHead id="experience" badge="Journey" title={experience.title} lede={experience.lede} />
 
-        <ol className={s.log}>
-          {roles.map((r, i) => (
-            <Reveal as="li" key={`${r.company}-${r.role}`} className={s.commit} data-head={i === 0}>
-              <div className={s.graph} aria-hidden="true">
-                <span className={s.node} />
-              </div>
+        <div className={s.timeline}>
+          <span className={s.track} aria-hidden="true">
+            <span className={s.fill} />
+          </span>
+          <ol className={s.list}>
+          {roles.map((r) => (
+            <li key={`${r.company}-${r.role}`} className={s.item} data-current={r.end == null}>
+              <span className={s.node} aria-hidden="true" />
+              <Reveal className={s.card} delay={60} data-spot>
+                <div className={s.meta}>
+                  <time className={s.date}>
+                    {r.start} — {r.end ?? 'Present'}
+                  </time>
+                  {r.end == null && (
+                    <span className={s.now}>
+                      <span className={s.nowDot} aria-hidden="true" />
+                      Now
+                    </span>
+                  )}
+                  {r.location && <span className={s.loc}>{r.location}</span>}
+                  <code className={s.sha} title="commit">
+                    {shortSha(`${r.company}/${r.role}/${r.start}`)}
+                  </code>
+                </div>
 
-              <div className={s.meta}>
-                <code className={s.sha}>{shortSha(`${r.company}/${r.role}/${r.start}`)}</code>
-                {r.ref && <span className={s.ref}>{r.ref}</span>}
-                <time className={s.date}>
-                  {r.start} — {r.end ?? 'present'}
-                </time>
-                {r.location && <span className={s.loc}>{r.location}</span>}
-              </div>
-
-              <div className={s.body}>
                 <h3 className={s.role}>
-                  {r.role} <span className={s.at}>at</span> <em className={s.company}>{r.company}</em>
+                  {r.role} <span className={s.at}>@</span> <span className={s.company}>{r.company}</span>
                 </h3>
                 {r.summary && <p className={s.summary}>{r.summary}</p>}
 
                 {r.highlights?.length > 0 && (
-                  <ul className={s.diff} aria-label="Highlights">
+                  <ul className={s.highlights} aria-label="Highlights">
                     {r.highlights.map((h) => (
-                      <li key={h}>
-                        <span className={s.plus} aria-hidden="true">
-                          +
-                        </span>
-                        <span>{h}</span>
-                      </li>
+                      <li key={h}>{h}</li>
                     ))}
                   </ul>
                 )}
 
-                <div className={s.foot}>
-                  <span className={s.ins}>
-                    {r.highlights?.length ?? 0} insertion{r.highlights?.length === 1 ? '' : 's'}(+)
-                  </span>
-                  {r.stack?.length > 0 && (
-                    <ul className={s.stack} aria-label="Stack">
-                      {r.stack.map((t) => (
-                        <li key={t}>{t}</li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </div>
-            </Reveal>
+                {r.stack?.length > 0 && (
+                  <ul className={s.stack} aria-label="Stack">
+                    {r.stack.map((t) => (
+                      <li key={t}>{t}</li>
+                    ))}
+                  </ul>
+                )}
+              </Reveal>
+            </li>
           ))}
-        </ol>
-
-        <Reveal as="p" className={s.tail}>
-          <span className={s.dollar}>$</span> git rev-list --count main
-          <span className={s.result}>
-            → {roles.length} roles · {years}+ years · still shipping
-          </span>
-        </Reveal>
+          </ol>
+        </div>
       </div>
     </section>
   )

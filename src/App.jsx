@@ -1,6 +1,8 @@
+import { useEffect } from 'react'
 import { UIProvider } from '@/context/UIContext.jsx'
 import { Hud } from '@/components/Hud/Hud.jsx'
-import { StackRail } from '@/components/StackRail/StackRail.jsx'
+import { SocialRail } from '@/components/SocialRail/SocialRail.jsx'
+import { CursorFX } from '@/components/CursorFX/CursorFX.jsx'
 import { CommandPalette } from '@/components/CommandPalette/CommandPalette.jsx'
 import { Toast } from '@/components/Toast/Toast.jsx'
 import { Hero } from '@/sections/Hero/Hero.jsx'
@@ -10,37 +12,56 @@ import { Experience } from '@/sections/Experience/Experience.jsx'
 import { Projects } from '@/sections/Projects/Projects.jsx'
 import { Contact } from '@/sections/Contact/Contact.jsx'
 
-/** Faint layout columns behind everything: the page shows its own grid. */
-function GridLines() {
-  return (
-    <div className="gridlines" aria-hidden="true">
-      <div className="wrap">
-        <span />
-        <span />
-        <span />
-        <span />
-      </div>
-    </div>
-  )
+/**
+ * One delegated listener powers the cursor spotlight on every [data-spot]
+ * card: it only writes two CSS variables on the hovered card, once per frame.
+ */
+function useSpotlight() {
+  useEffect(() => {
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return
+    let frame = 0
+    let last
+    const onMove = (e) => {
+      last = e
+      if (frame) return
+      frame = requestAnimationFrame(() => {
+        frame = 0
+        const card = last.target.closest?.('[data-spot]')
+        if (!card) return
+        const r = card.getBoundingClientRect()
+        card.style.setProperty('--mx', `${last.clientX - r.left}px`)
+        card.style.setProperty('--my', `${last.clientY - r.top}px`)
+      })
+    }
+    document.addEventListener('pointermove', onMove, { passive: true })
+    return () => {
+      document.removeEventListener('pointermove', onMove)
+      cancelAnimationFrame(frame)
+    }
+  }, [])
 }
 
 export default function App() {
+  useSpotlight()
   return (
     <UIProvider>
       <a href="#main" className="skip-link">
         Skip to content
       </a>
-      <GridLines />
+      <div className="aurora" aria-hidden="true">
+        <span />
+        <span />
+      </div>
       <Hud />
-      <StackRail />
+      <SocialRail />
+      <CursorFX />
 
-      {/* Sections follow the request: request → client → api → services → data → response */}
       <main id="main" className="main">
         <Hero />
         <About />
         <Capabilities />
-        <Experience />
         <Projects />
+        <Experience />
         <Contact />
       </main>
 

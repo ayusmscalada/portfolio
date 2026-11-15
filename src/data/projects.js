@@ -6,10 +6,12 @@
  *   To use a screenshot, put it in /public/projects and set image: '/projects/atlas.jpg'.
  * - `caseStudy` sections appear in the detail sheet. Add or remove keys freely.
  * - Leave a link empty ('') to hide it.
+ * - Status badge is automatic: LIVE when `links.live` is set, GITHUB when only
+ *   `links.repo` is set, otherwise PRIVATE. Override with `status: 'live'`, etc.
  */
 export const projectsIntro = {
-  title: 'Selected *records*.',
-  lede: 'A query over the work I am proudest of. Filter by stack, open a record for the full case study.',
+  title: 'Selected *work*.',
+  lede: 'Products I have designed, built and run in production. Open any card for the full case study.',
 }
 
 export const projects = [
@@ -36,7 +38,7 @@ export const projects = [
         'Updates land in under 400ms end-to-end. Infrastructure cost dropped 35% while handling 4× the traffic.',
     },
     links: { live: 'https://example.com', repo: '' },
-    image: '',
+    image: '/images/atlas-preview.webp',
   },
   {
     id: 'ledgerline',
@@ -61,7 +63,7 @@ export const projects = [
         'Month-end close went from four days to an automated report. Zero balance discrepancies since launch.',
     },
     links: { live: '', repo: '' },
-    image: '',
+    image: '/images/ledgerline-preview.webp',
   },
   {
     id: 'fieldnotes',

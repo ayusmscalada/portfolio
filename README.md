@@ -1,72 +1,45 @@
-# Portfolio — "The Request"
+# Portfolio — Systems Atelier
 
-A full-stack developer's portfolio told as a full-stack request.
-Scrolling sends one HTTP request down the stack and back. A packet travels the rail on the left, and each section is a layer:
+A responsive, live engineering portfolio: an interactive WebGL particle core in the hero, an animated monogram emblem, glass cards with a cursor spotlight, LIVE/GITHUB/PRIVATE project status, a live local clock and availability signal. Built with React, Vite, CSS Modules, a hand-written WebGL renderer (no 3D library), self-hosted Inter and JetBrains Mono, and a generated subset of Phosphor icons.
 
-| #  | Layer       | Section      | Metaphor                                         |
-| -- | ----------- | ------------ | ------------------------------------------------ |
-| 00 | `/request`  | Intro        | Kinetic variable-font name that swells under the cursor |
-| 01 | `/client`   | About        | Statement, "currently", live counters, principles |
-| 02 | `/api`      | Capabilities | Skills as API endpoints with JSON responses      |
-| 03 | `/services` | Experience   | Career as a `git log --graph`                    |
-| 04 | `/data`     | Projects     | Records you filter with a live SQL query         |
-| 05 | `/response` | Contact      | `200 OK` with response headers                   |
+## Run locally
 
-Built with **React 19 + Vite**, CSS Modules and design tokens. There's no UI or animation library; the only runtime dependencies are React and self-hosted fonts.
-
-## Run it
-
-```bash
+```sh
 npm install
-npm run dev       # http://localhost:5173
-npm run build     # production build → dist/
-npm run preview   # serve the build
+npm run dev
+npm run build
+npm run preview
 ```
 
-## Make it yours
+## Personalize
 
-All content lives in `src/data/`. You shouldn't need to touch components to fill in your story.
+All personal content lives in `src/data/`:
 
-| File                         | What it controls                                                   |
-| ---------------------------- | ------------------------------------------------------------------ |
-| `src/data/profile.js`        | Name, role, tagline, email, location, timezone, socials, résumé link. Also fills `<title>` and meta tags. |
-| `src/data/about.js`          | About title, statement, paragraphs, "currently", stats, principles |
-| `src/data/capabilities.js`   | Endpoints (skills). `response` keys are free-form.                 |
-| `src/data/experience.js`     | Roles, newest first. Highlights render as `+` diff lines.          |
-| `src/data/projects.js`       | Projects plus case studies. Tags shared by 2+ projects become filter chips. |
-| `src/data/sections.js`       | Section order, ids, layer names and labels (rail, header and ⌘K menu follow). |
+| File | Content |
+| --- | --- |
+| `profile.js` | Name, role, monogram (emblem + favicon), hero headline and rotating "I build …" phrases, email, timezone (live clock), availability, socials, résumé |
+| `projects.js` | Featured projects, archive, technology tags, images, case studies |
+| `about.js` | Biography, current interests, statistics, principles |
+| `capabilities.js` | Skill cards: `level` drives the proficiency bar, `icon` picks the glyph, tiers render as 5/4/3 dots |
+| `experience.js` | Roles and career highlights |
+| `sections.js` | Section order, nav labels and icons |
 
-**Emphasis markup:** in any text field, wrap words in `*asterisks*` to render them in the italic serif accent face, e.g. `'I build *resilient* systems'`.
+The supplied name, links, achievements, and experience remain template content; replace them before publishing. Atlas and Ledgerline previews in `public/images/` are generated interface concepts, not screenshots of live products. Replace them with your actual product captures when available.
 
-**Project images:** each project gets a generative cover drawn from its `id`. To use a real screenshot, put it in `public/projects/` and set `image: '/projects/name.jpg'`.
+Projects with an `image` display it in the card and case study (use WebP, ~1200px wide); others get a generative cover. Status badges are automatic: LIVE when `links.live` is set, GITHUB when only `links.repo` is set, otherwise PRIVATE (override with `status`). The first three projects show by default; the rest sit behind "Show more", and technology chips filter the list.
 
-**Résumé:** drop `resume.pdf` in `public/` and set `resumeUrl: '/resume.pdf'`. It then appears in Contact and the ⌘K menu.
+## Design and interaction
 
-## Design system
+Shared visual tokens are in `src/styles/tokens.css`; section styles use CSS Modules. Text wrapped in `*asterisks*` renders with the animated cyan → violet gradient.
 
-`src/styles/tokens.css` is the single place to re-skin the site:
+- **Particle core** (`src/components/ParticleCore/`): a breathing sphere of 5–11k points (scaled to the device) that reacts to the pointer, sends a shockwave on click, pulses on its own, and unfolds into a particle wave as you scroll. One draw call; all motion runs in the vertex shader.
+- **Emblem** (`src/components/Emblem/`): SVG crest built from your monogram with orbit rings, an energy trace, flare and sparks; tilts toward the cursor.
+- **Live signals**: local clock and availability in the nav, live hero telemetry (particles / fps), LIVE project badges, a beacon on your current role.
+- Ctrl/Cmd+K or `/` opens the command menu (also the mobile menu). Case studies support ←/→ and Escape.
 
-- **Type:** Bricolage Grotesque (variable weight + optical size) for display and body, Instrument Serif italic for emphasis, JetBrains Mono for technical labels. All are self-hosted via Fontsource.
-- **Fluid type scale:** `--text-xs` … `--text-hero`, interpolated linearly between 360px and 1440px viewports.
-- **Themes:** `[data-theme='dark' | 'light']`. Toggling uses a circular View Transition reveal.
-- **Accents:** `[data-accent='signal' | 'acid' | 'ion' | 'plasma']`. Change `--accent-fill` or add your own. Light mode derives a darker, text-safe variant automatically.
-- **Shape:** `--radius: 0px` keeps everything sharp. Raise it for a softer look.
+## Performance
 
-## Interaction details
-
-- **⌘K / Ctrl+K** (or `/`) opens the command menu: navigate, copy email, switch theme, cycle accent, open socials.
-- In the project sheet, **← / →** step through the currently filtered records; **Esc** closes it.
-- Respects `prefers-reduced-motion`: the kinetic type, reveals and counters switch off.
-- Accessibility: semantic landmarks, skip link, real `<dialog>` modals with focus trapping, labelled controls, visible focus rings.
-
-## Project structure
-
-```
-src/
-  data/          ← your content (edit these)
-  styles/        tokens.css (design system), base.css (reset + shared motion)
-  components/    Hud, StackRail, CommandPalette, KineticText, Cover, SectionHead, motion/*
-  sections/      Hero, About, Capabilities, Experience, Projects, Contact
-  context/       UIContext: theme, accent, palette, toasts, clipboard
-  hooks/ lib/    useInView, useMediaQuery, scrollSpy store, hashing, rich-text
-```
+- The WebGL engine is a separate ~8 KB chunk, fetched only after the page has loaded, painted and gone idle; a CSS glow stands in until then or if WebGL is unavailable. Its render loop stops when the hero is offscreen or the tab is hidden.
+- Below-the-fold sections use `content-visibility: auto`, so first paint only lays out the hero.
+- Icons come from `src/components/ph.jsx`, a generated subset of Phosphor with only the weights used. To add one, list it in `scripts/gen-icons.mjs` and run `npm run icons`.
+- `prefers-reduced-motion` freezes the core to a single still frame and disables decorative animation.

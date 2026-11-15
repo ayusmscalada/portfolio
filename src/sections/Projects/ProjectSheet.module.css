@@ -285,3 +285,4 @@
 .secondary:hover {
   border-color: var(--text);
 }
+.sheet { border-radius:18px 0 0 18px; }

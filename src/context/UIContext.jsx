@@ -1,11 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { profile } from '@/data/profile.js'
+import { isReducedMotion, setMotion } from '@/lib/motion.js'
 
 const UIContext = createContext(null)
 
 export const ACCENTS = ['signal', 'acid', 'ion', 'plasma']
-const THEME_COLORS = { dark: '#0d0d0c', light: '#eeeae1' }
+const THEME_COLORS = { dark: '#050a14', light: '#edf5fb' }
 
 const root = () => document.documentElement
 const store = (key, value) => {
@@ -19,6 +20,7 @@ const store = (key, value) => {
 export function UIProvider({ children }) {
   const [theme, setTheme] = useState(() => root().dataset.theme || 'dark')
   const [accent, setAccent] = useState(() => root().dataset.accent || ACCENTS[0])
+  const [motion, setMotionState] = useState(() => (isReducedMotion() ? 'reduced' : 'full'))
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [toast, setToast] = useState(null)
   const toastTimer = useRef(0)
@@ -41,7 +43,7 @@ export function UIProvider({ children }) {
         flushSync(() => setTheme(next))
       }
 
-      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      const reduced = document.documentElement.dataset.motion === 'reduced'
       if (!document.startViewTransition || reduced) return apply()
 
       const rect = event?.currentTarget?.getBoundingClientRect?.()
@@ -59,6 +61,14 @@ export function UIProvider({ children }) {
     },
     [theme],
   )
+
+  /* ---- motion: site-wide animation switch ---------------------------- */
+  const toggleMotion = useCallback(() => {
+    const next = motion === 'full' ? 'reduced' : 'full'
+    setMotion(next)
+    setMotionState(next)
+    notify(next === 'full' ? 'Motion on' : 'Motion paused')
+  }, [motion, notify])
 
   /* ---- accent --------------------------------------------------------- */
   const cycleAccent = useCallback(() => {
@@ -106,6 +116,8 @@ export function UIProvider({ children }) {
       toggleTheme,
       accent,
       cycleAccent,
+      motion,
+      toggleMotion,
       paletteOpen,
       openPalette,
       closePalette,
@@ -113,7 +125,7 @@ export function UIProvider({ children }) {
       notify,
       copyEmail,
     }),
-    [theme, toggleTheme, accent, cycleAccent, paletteOpen, openPalette, closePalette, toast, notify, copyEmail],
+    [theme, toggleTheme, accent, cycleAccent, motion, toggleMotion, paletteOpen, openPalette, closePalette, toast, notify, copyEmail],
   )
 
   return <UIContext.Provider value={value}>{children}</UIContext.Provider>

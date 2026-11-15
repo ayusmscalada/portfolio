@@ -1,0 +1,44 @@
+.stage {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Static stand-in that matches the sphere's footprint: shows instantly. */
+.glow {
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  width: min(78vh, 86vw);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, transparent 58%, rgb(125 211 252 / 0.16) 69%, transparent 71%),
+    radial-gradient(circle at 50% 50%, rgb(56 189 248 / 0.12), transparent 66%);
+  transition: opacity 1.4s ease;
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+
+.stage[data-ready='true'] .canvas {
+  opacity: 1;
+}
+
+.stage[data-ready='true'] .glow {
+  opacity: 0.55;
+}
+
+@media (max-width: 700px) {
+  .glow {
+    top: 40%;
+  }
+}

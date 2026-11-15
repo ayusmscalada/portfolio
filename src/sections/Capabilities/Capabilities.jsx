@@ -1,105 +1,81 @@
-import { Fragment, useState } from 'react'
 import { capabilities } from '@/data/capabilities.js'
-import { profile } from '@/data/profile.js'
 import { SectionHead } from '@/components/SectionHead/SectionHead.jsx'
 import { Reveal } from '@/components/motion/Reveal.jsx'
+import { skillIcons } from '@/components/icons.js'
 import s from './Capabilities.module.css'
 
-/** Pretty-printed, syntax-coloured JSON with hanging indents for wrapped arrays. */
-function JsonBody({ data }) {
-  const keys = Object.keys(data)
+const TIER_DOTS = [5, 4, 3, 2]
+const TIER_LABELS = ['Core', 'Fluent', 'Exploring', 'Learning']
+
+function Dots({ n }) {
   return (
-    <code className={s.code}>
-      <span className={s.punc}>{'{'}</span>
-      {keys.map((key, k) => (
-        <span key={key} className={s.jline}>
-          <span className={s.key}>"{key}"</span>
-          <span className={s.punc}>: [</span>
-          {data[key].map((value, v) => (
-            <Fragment key={value}>
-              <span className={s.str} data-tier={k}>
-                "{value}"
-              </span>
-              {v < data[key].length - 1 && <span className={s.punc}>, </span>}
-            </Fragment>
-          ))}
-          <span className={s.punc}>]{k < keys.length - 1 ? ',' : ''}</span>
-        </span>
+    <span className={s.dots} aria-hidden="true">
+      {[0, 1, 2, 3, 4].map((d) => (
+        <i key={d} data-on={d < n} />
       ))}
-      <span className={s.punc}>{'}'}</span>
-    </code>
+    </span>
   )
 }
 
 export function Capabilities() {
-  const [open, setOpen] = useState(0)
   const { endpoints } = capabilities
+  const tierCount = Math.max(...endpoints.map((ep) => Object.keys(ep.response).length))
 
   return (
     <section id="capabilities" className={s.section} aria-labelledby="capabilities-title">
       <div className="wrap">
-        <SectionHead
-          id="capabilities"
-          eyebrow={`$ curl -s api.${profile.domain}/v1 | jq`}
-          title={capabilities.title}
-          lede={capabilities.lede}
-        />
+        <SectionHead id="capabilities" badge="Tech stack" title={capabilities.title} lede={capabilities.lede} />
 
-        <ul className={s.list}>
+        <Reveal as="ul" className={s.legend} aria-label="Legend">
+          {TIER_LABELS.slice(0, tierCount).map((label, i) => (
+            <li key={label}>
+              {label} <Dots n={TIER_DOTS[i]} />
+            </li>
+          ))}
+        </Reveal>
+
+        <ul className={s.grid}>
           {endpoints.map((ep, i) => {
-            const isOpen = open === i
-            const count = Object.values(ep.response).flat().length
+            const Icon = skillIcons[ep.icon] ?? skillIcons.code
+            const tiers = Object.entries(ep.response)
             return (
-              <Reveal as="li" key={ep.path} className={s.item} data-open={isOpen} delay={i * 70}>
-                <h3 className={s.heading}>
-                  <button
-                    type="button"
-                    id={`ep-btn-${i}`}
-                    className={s.row}
-                    aria-expanded={isOpen}
-                    aria-controls={`ep-panel-${i}`}
-                    onClick={() => setOpen(isOpen ? -1 : i)}
-                  >
-                    <span className={s.method}>{ep.method}</span>
-                    <span className={s.path}>{ep.path}</span>
-                    <span className={s.title}>{ep.title}</span>
-                    <span className={s.status}>
-                      <span className={s.ok}>200</span> · {ep.latency}ms · {count} items
-                    </span>
-                    <span className={s.toggle} aria-hidden="true" />
-                  </button>
-                </h3>
-
-                <div
-                  id={`ep-panel-${i}`}
-                  role="region"
-                  aria-labelledby={`ep-btn-${i}`}
-                  className={s.panel}
-                  inert={!isOpen}
-                >
-                  <div className={s.panelClip}>
-                    <div className={s.panelBody}>
-                      <div className={s.desc}>
-                        <p>{ep.description}</p>
-                        <p className={s.curl}>
-                          <span className={s.dollar}>$</span> curl -X {ep.method} api.{profile.domain}
-                          {ep.path}
-                        </p>
-                      </div>
-                      <div className={s.response}>
-                        <div className={s.responseHead}>
-                          <span>
-                            HTTP/2 <span className={s.ok}>200 OK</span>
-                          </span>
-                          <span>application/json · {ep.latency}ms</span>
-                        </div>
-                        <pre className={s.pre}>
-                          <JsonBody data={ep.response} />
-                        </pre>
-                      </div>
-                    </div>
+              <Reveal as="li" key={ep.path} className={s.card} delay={(i % 3) * 90} data-spot>
+                <div className={s.top}>
+                  <span className={s.icon}>
+                    <Icon size={22} />
+                  </span>
+                  <div>
+                    <code className={s.path}>
+                      <span>{ep.method}</span> {ep.path}
+                    </code>
+                    <h3 className={s.title}>{ep.title}</h3>
                   </div>
                 </div>
+
+                {ep.level != null && (
+                  <div className={s.meter}>
+                    <span className={s.meterLabel}>
+                      Proficiency <b>{ep.level}%</b>
+                    </span>
+                    <span className={s.bar} role="meter" aria-valuenow={ep.level} aria-valuemin={0} aria-valuemax={100} aria-label={`${ep.title} proficiency`}>
+                      <span style={{ '--level': ep.level / 100 }} />
+                    </span>
+                  </div>
+                )}
+
+                <ul className={s.skills}>
+                  {tiers.flatMap(([tier, items], t) =>
+                    items.map((item) => (
+                      <li key={item} title={`${tier}`}>
+                        <span>{item}</span>
+                        <Dots n={TIER_DOTS[t] ?? 2} />
+                        <span className="sr-only">({tier})</span>
+                      </li>
+                    )),
+                  )}
+                </ul>
+
+                <p className={s.desc}>{ep.description}</p>
               </Reveal>
             )
           })}

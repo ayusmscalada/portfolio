@@ -7,8 +7,8 @@
  * Each highlight renders as a "+" line in the diff; lead with the impact.
  */
 export const experience = {
-  title: 'Production *history*, as a commit log.',
-  lede: 'Roles, newest first. Each commit lists what actually changed.',
+  title: 'The *journey* so far.',
+  lede: 'Roles, newest first, each with what actually changed because I was there.',
 
   roles: [
     {

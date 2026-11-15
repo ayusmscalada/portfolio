@@ -12,6 +12,15 @@ export const profile = {
   lastName: 'Name',
   role: 'Full-stack Engineer',
 
+  /** 1–2 letters shown in the emblem logo. Defaults to your initials. */
+  monogram: '',
+
+  /** Hero headline. *Emphasis* renders with the animated gradient. */
+  headline: 'Resilient systems. *Expressive* interfaces. Real impact.',
+
+  /** Rotating "I build …" phrases in the hero. */
+  building: ['realtime platforms', 'payment infrastructure', 'design systems', 'developer tools'],
+
   /** Shown in the hero's request line: GET / HTTP/2 · host: <domain> */
   domain: 'yourname.dev',
 
@@ -41,11 +50,12 @@ export const profile = {
   /** Short list shown in the hero meta block. */
   focus: ['React', 'Node.js', 'PostgreSQL', 'AWS'],
 
+  /** `icon`: github | linkedin | x | writing (see components/SocialIcon). */
   socials: [
-    { label: 'GitHub', handle: '@yourhandle', url: 'https://github.com/yourhandle' },
-    { label: 'LinkedIn', handle: 'in/yourname', url: 'https://www.linkedin.com/in/yourname' },
-    { label: 'X / Twitter', handle: '@yourhandle', url: 'https://x.com/yourhandle' },
-    { label: 'Writing', handle: 'yourname.dev/notes', url: 'https://yourname.dev/notes' },
+    { label: 'GitHub', icon: 'github', handle: '@yourhandle', url: 'https://github.com/yourhandle' },
+    { label: 'LinkedIn', icon: 'linkedin', handle: 'in/yourname', url: 'https://www.linkedin.com/in/yourname' },
+    { label: 'X / Twitter', icon: 'x', handle: '@yourhandle', url: 'https://x.com/yourhandle' },
+    { label: 'Writing', icon: 'writing', handle: 'yourname.dev/notes', url: 'https://yourname.dev/notes' },
   ],
 }
 

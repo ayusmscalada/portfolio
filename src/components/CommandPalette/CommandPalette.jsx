@@ -6,7 +6,7 @@ import { scrollToId } from '@/lib/scrollTo.js'
 import s from './CommandPalette.module.css'
 
 function useCommands() {
-  const { theme, toggleTheme, accent, cycleAccent, copyEmail } = useUI()
+  const { theme, toggleTheme, accent, cycleAccent, motion, toggleMotion, copyEmail } = useUI()
 
   return useMemo(
     () =>
@@ -15,7 +15,7 @@ function useCommands() {
           id: `go-${sec.id}`,
           group: 'Navigate',
           label: sec.label,
-          hint: `${sec.index} /${sec.layer}`,
+          hint: `#${sec.id}`,
           run: () => scrollToId(sec.id),
         })),
         { id: 'copy-email', group: 'Contact', label: 'Copy email address', hint: profile.email, run: copyEmail },
@@ -42,6 +42,7 @@ function useCommands() {
           hint: theme,
           run: () => toggleTheme(),
         },
+        { id: 'motion', group: 'Preferences', label: motion === 'full' ? 'Pause animations' : 'Play animations', hint: motion, run: toggleMotion },
         { id: 'accent', group: 'Preferences', label: 'Cycle accent colour', hint: accent, run: cycleAccent },
         ...profile.socials.map((so) => ({
           id: `link-${so.label}`,
@@ -51,7 +52,7 @@ function useCommands() {
           run: () => window.open(so.url, '_blank', 'noopener,noreferrer'),
         })),
       ].filter(Boolean),
-    [theme, toggleTheme, accent, cycleAccent, copyEmail],
+    [theme, toggleTheme, accent, cycleAccent, motion, toggleMotion, copyEmail],
   )
 }
 

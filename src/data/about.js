@@ -6,7 +6,7 @@ const yearsShipping = new Date().getFullYear() - profile.since
  * 01 / client: the human behind the request.
  */
 export const about = {
-  title: 'The human *behind* the request.',
+  title: 'The human *behind* the code.',
   lede: 'Engineer by trade, product-minded by habit. I care about the whole path, not just my slice of it.',
 
   /** The big opening statement. Keep it to 1–2 sentences. */

@@ -1,0 +1,15 @@
+{
+  "checks": [
+    "Visible wave runs",
+    "Only transform keyframes",
+    "Offscreen wave pauses",
+    "Hidden tab pauses",
+    "Reduced motion disables wave"
+  ],
+  "steadyStateSample": {
+    "seconds": 3,
+    "layoutCount": 0,
+    "recalcStyleCount": 39,
+    "taskDurationMs": 46
+  }
+}
