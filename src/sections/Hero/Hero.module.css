@@ -59,49 +59,6 @@
   pointer-events: none;
 }
 
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 7px 16px;
-  border: 1px solid rgb(125 211 252 / 0.32);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--bg) 70%, transparent);
-  box-shadow: 0 0 26px -6px rgb(56 189 248 / 0.45);
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-  font-weight: 650;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-.dot {
-  position: relative;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--ok);
-}
-
-.dot::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: var(--ok);
-  animation: ping 2.2s cubic-bezier(0, 0, 0.2, 1) infinite;
-}
-
-@keyframes ping {
-  75%, 100% { transform: scale(2.6); opacity: 0; }
-}
-
-.sep {
-  width: 1px;
-  height: 12px;
-  background: var(--line-strong);
-}
-
 .title {
   font-size: clamp(2.5rem, 1.1rem + 3.9vw, 4.6rem);
   font-weight: 850;
@@ -249,48 +206,6 @@
   transform: translate(2px, -2px) rotate(8deg);
 }
 
-/* Live telemetry readout */
-.telemetry {
-  position: absolute;
-  z-index: 2;
-  right: clamp(18px, 3vw, 44px);
-  bottom: clamp(26px, 5vh, 44px);
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 3px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-dim);
-}
-
-.teleRow {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-variant-numeric: tabular-nums;
-}
-
-.teleDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--text-dim);
-  transition: background-color 0.3s, box-shadow 0.3s;
-}
-
-.teleDot[data-on='true'] {
-  background: var(--accent);
-  box-shadow: 0 0 8px var(--accent);
-}
-
-.teleHint {
-  margin-top: 6px;
-  color: color-mix(in srgb, var(--text-dim) 75%, transparent);
-  letter-spacing: 0.1em;
-}
 
 .scroll {
   position: absolute;
@@ -333,11 +248,10 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .badge { animation: arrive 0.8s var(--ease-out) 0.05s both; }
   .building { animation: arrive 0.8s var(--ease-out) 0.55s both; }
   .summary { animation: arrive 0.8s var(--ease-out) 0.7s both; }
   .actions { animation: arrive 0.8s var(--ease-out) 0.85s both; }
-  .telemetry, .scroll { animation: fade 1.2s ease 1.2s both; }
+  .scroll { animation: fade 1.2s ease 1.2s both; }
 }
 
 @keyframes arrive {
@@ -349,13 +263,8 @@
   from { opacity: 0; }
 }
 
-@media (max-width: 900px) {
-  .telemetry { display: none; }
-}
-
 @media (max-width: 560px) {
   .hero { padding-top: 100px; padding-bottom: 76px; }
-  .badge { font-size: 10px; letter-spacing: 0.12em; padding: 6px 12px; }
   .title { font-size: clamp(2.3rem, 10.5vw, 3rem); }
   .actions { width: 100%; flex-direction: column; }
   .primary, .secondary { justify-content: center; }
@@ -363,6 +272,309 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .dot::after, .primary::before, .scrollTrack svg, .word[data-state='in']::after { animation: none; }
+  .primary::before, .scrollTrack svg, .word[data-state='in']::after { animation: none; }
   .word { transition: none; }
+}
+
+/* ==========================================================================
+   Scene around the core: orbit rings, floating stack chips, glass panels
+   ========================================================================== */
+
+.content { z-index: 3; }
+
+.orbits {
+  --core: min(78vh, 86vw);
+  position: absolute;
+  z-index: 0;
+  left: 50%;
+  top: 45%;
+  width: var(--core);
+  height: var(--core);
+  translate: -50% -50%;
+  pointer-events: none;
+}
+
+.orbit {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid rgb(125 211 252 / 0.2);
+}
+
+.orbitA {
+  inset: -14%;
+  transform: rotateX(74deg) rotateY(-14deg) rotateZ(0deg);
+  animation: orbitA 24s linear infinite;
+}
+
+.orbitB {
+  inset: -28%;
+  border-color: rgb(167 139 250 / 0.16);
+  transform: rotateX(68deg) rotateY(18deg) rotateZ(0deg);
+  animation: orbitB 38s linear infinite reverse;
+}
+
+.orbitC {
+  inset: -6%;
+  border: 1px dashed rgb(125 211 252 / 0.14);
+  transform: rotateX(80deg) rotateZ(0deg);
+  animation: orbitC 60s linear infinite;
+}
+
+@keyframes orbitA {
+  to { transform: rotateX(74deg) rotateY(-14deg) rotateZ(360deg); }
+}
+@keyframes orbitB {
+  to { transform: rotateX(68deg) rotateY(18deg) rotateZ(360deg); }
+}
+@keyframes orbitC {
+  to { transform: rotateX(80deg) rotateZ(360deg); }
+}
+
+.sat {
+  position: absolute;
+  left: 50%;
+  top: -6px;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  border-radius: 50%;
+  background: #e0f2fe;
+  box-shadow: 0 0 12px 3px rgb(56 189 248 / 0.8), 0 0 30px 8px rgb(56 189 248 / 0.35);
+}
+
+.satB {
+  top: auto;
+  bottom: -6px;
+  background: #ede9fe;
+  box-shadow: 0 0 12px 3px rgb(167 139 250 / 0.8), 0 0 30px 8px rgb(167 139 250 / 0.3);
+}
+
+.scene {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Each floating item: `translate` = pointer parallax, `transform` = idle float. */
+.chip,
+.panel {
+  position: absolute;
+  translate: calc(var(--px, 0) * var(--d, 2) * -22px) calc(var(--py, 0) * var(--d, 2) * -16px);
+  transition: translate 0.6s var(--ease-out);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid var(--line-glass);
+  border-radius: 999px;
+  background: var(--glass);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 8px 24px -10px rgb(0 0 0 / 0.6), inset 0 1px 0 rgb(255 255 255 / 0.05);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  animation: float 7s ease-in-out var(--float-delay, 0s) infinite;
+}
+
+.chip i {
+  width: 7px;
+  height: 7px;
+  rotate: 45deg;
+  border-radius: 2px;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent);
+}
+
+.chip:nth-child(even) i {
+  background: var(--violet);
+  box-shadow: 0 0 10px var(--violet);
+}
+
+.chip[data-slot='0'] { left: 14%; top: 22%; }
+.chip[data-slot='1'] { left: 78%; top: 18%; }
+.chip[data-slot='2'] { left: 6%;  top: 41%; }
+.chip[data-slot='3'] { left: 86%; top: 37%; }
+.chip[data-slot='4'] { left: 27%; top: 12%; }
+.chip[data-slot='5'] { left: 66%; top: 10%; }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+.panel {
+  --d: 3;
+  border: 1px solid var(--line-glass);
+  border-radius: 16px;
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 20px 50px -20px rgb(0 0 0 / 0.7), inset 0 1px 0 rgb(255 255 255 / 0.05);
+  animation: float 9s ease-in-out infinite;
+}
+
+.statCard {
+  left: clamp(104px, 7.5%, 160px);
+  top: 60%;
+  display: grid;
+  gap: 2px;
+  width: 200px;
+  padding: 16px 18px 12px;
+  animation-delay: -3s;
+}
+
+.statValue {
+  font-size: 2rem;
+  font-weight: 850;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  background: var(--grad-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.statLabel {
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.spark {
+  margin-top: 8px;
+  width: 100%;
+  height: 34px;
+  overflow: visible;
+}
+
+.spark path {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 4px rgb(56 189 248 / 0.6));
+  stroke-dasharray: 200;
+  stroke-dashoffset: 200;
+  animation: draw 4s var(--ease-out) 1.2s infinite;
+}
+
+@keyframes draw {
+  0% { stroke-dashoffset: 200; }
+  45%, 85% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -200; }
+}
+
+.terminal {
+  right: 4%;
+  top: 59%;
+  width: 270px;
+  overflow: hidden;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.panelBar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--line);
+  color: var(--text-dim);
+  font-size: 11px;
+}
+
+.panelBar i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--line-strong);
+}
+
+.panelBar span {
+  margin-left: 6px;
+}
+
+.terminal ol {
+  display: grid;
+  gap: 4px;
+  min-height: 138px;
+  padding: 10px 14px 12px;
+  color: var(--text-muted);
+}
+
+.terminal li {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  animation: line-in 0.35s var(--ease-out) both;
+}
+
+.terminal li:last-child::after {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 13px;
+  margin-left: 4px;
+  vertical-align: -2px;
+  background: var(--accent);
+  animation: caret 1s steps(1) infinite;
+}
+
+.terminal b {
+  display: inline-block;
+  width: 14px;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+.terminal li[data-sym='✓'] b { color: var(--accent); }
+.terminal li[data-sym='→'] b { color: var(--violet); }
+
+@keyframes line-in {
+  from { opacity: 0; transform: translateX(-6px); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .scene { animation: fade 1.4s ease 0.9s both; }
+  .orbits { animation: fade 1.6s ease 0.4s both; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orbit, .chip, .panel, .spark path, .terminal li, .terminal li:last-child::after { animation: none; }
+  .spark path { stroke-dashoffset: 0; }
+  .chip, .panel { translate: none; }
+}
+
+:global([data-theme='light']) .orbit { border-color: rgb(3 105 161 / 0.2); }
+:global([data-theme='light']) .chip,
+:global([data-theme='light']) .panel { box-shadow: 0 10px 30px -14px rgb(16 73 110 / 0.35); }
+
+@media (max-width: 1240px) {
+  .statCard, .terminal { display: none; }
+}
+
+@media (max-width: 900px) {
+  .chip { font-size: 11px; padding: 6px 11px; }
+  .chip[data-slot='2'], .chip[data-slot='4'], .chip[data-slot='5'] { display: none; }
+  .chip[data-slot='0'] { left: 6%; top: 16%; }
+  .chip[data-slot='1'] { left: auto; right: 6%; top: 12%; }
+  .chip[data-slot='3'] { left: auto; right: 4%; top: 34%; }
+}
+
+@media (max-width: 560px) {
+  .orbits { top: 40%; }
+  .chip[data-slot='3'] { display: none; }
+  .chip[data-slot='0'] { top: 13%; }
+  .chip[data-slot='1'] { top: 21%; }
 }

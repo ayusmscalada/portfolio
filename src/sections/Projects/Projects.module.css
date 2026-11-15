@@ -117,10 +117,10 @@
 }
 
 .status[data-status='live'] {
-  color: #86efac;
-  border-color: rgb(74 222 128 / 0.45);
-  background: rgb(5 46 22 / 0.72);
-  box-shadow: 0 0 18px -4px rgb(74 222 128 / 0.55);
+  color: #bae6fd;
+  border-color: rgb(125 211 252 / 0.5);
+  background: rgb(3 30 52 / 0.75);
+  box-shadow: 0 0 18px -4px rgb(56 189 248 / 0.55);
 }
 
 .status[data-status='github'] {

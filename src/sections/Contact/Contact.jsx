@@ -27,7 +27,6 @@ export function Contact() {
 
         <Reveal className={s.panel} data-spot>
           <div className={s.status}>
-            <span className={s.statusDot} data-open={profile.availability.open} aria-hidden="true" />
             <span>{profile.availability.open ? profile.availability.label : 'Not taking new work right now'}</span>
             <span className={s.localTime}>
               Local time <Clock timeZone={profile.timezone} label={profile.timezoneLabel} />

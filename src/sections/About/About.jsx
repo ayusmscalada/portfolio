@@ -17,7 +17,7 @@ export function About() {
           </Reveal>
 
           <div className={s.copy}>
-            <SectionHead id="about" badge="About me" title={about.title} align="start" />
+            <SectionHead id="about" badge="About me" title={about.title} align="start" size="sm" />
             <Reveal as="p" className={s.statement}>
               <Rich text={about.statement} />
             </Reveal>
@@ -29,8 +29,7 @@ export function About() {
 
             <Reveal as="aside" className={s.now} delay={240} aria-label="Currently" data-spot>
               <p className={s.nowHead}>
-                <span className={s.live} aria-hidden="true" />
-                Live · currently
+                Currently
                 <span className={s.nowAvail}>{profile.availability.label}</span>
               </p>
               <dl>

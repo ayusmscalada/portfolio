@@ -62,7 +62,6 @@ export function Hud() {
 
         <div className={s.tools}>
           <span className={s.live} title={profile.availability.label}>
-            <span className={s.liveDot} aria-hidden="true" />
             <Clock timeZone={profile.timezone} label={profile.timezoneLabel} className={s.clock} />
           </span>
           <button className={s.icon} onClick={toggleMotion} aria-label={motion === 'full' ? 'Pause animations' : 'Play animations'} title={motion === 'full' ? 'Pause animations' : 'Play animations'}>

@@ -27,7 +27,6 @@ export function Experience() {
                   </time>
                   {r.end == null && (
                     <span className={s.now}>
-                      <span className={s.nowDot} aria-hidden="true" />
                       Now
                     </span>
                   )}

@@ -6,9 +6,9 @@ import s from './SectionHead.module.css'
  * Shared section header: glowing badge, split-reveal title with a gradient
  * on *emphasis*, and an optional lede.
  */
-export function SectionHead({ id, title, lede, badge, align = 'center' }) {
+export function SectionHead({ id, title, lede, badge, align = 'center', size = 'lg' }) {
   return (
-    <header className={s.head} data-align={align}>
+    <header className={s.head} data-align={align} data-size={size}>
       {badge && (
         <Reveal as="p" className={s.badge}>
           <span className={s.dot} aria-hidden="true" />

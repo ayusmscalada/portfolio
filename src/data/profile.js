@@ -18,6 +18,9 @@ export const profile = {
   /** Hero headline. *Emphasis* renders with the animated gradient. */
   headline: 'Resilient systems. *Expressive* interfaces. Real impact.',
 
+  /** Up to 6 tech chips floating around the hero sphere. */
+  heroTags: ['React', 'TypeScript', 'Node.js', 'PostgreSQL', 'AWS', 'GraphQL'],
+
   /** Rotating "I build …" phrases in the hero. */
   building: ['realtime platforms', 'payment infrastructure', 'design systems', 'developer tools'],
 

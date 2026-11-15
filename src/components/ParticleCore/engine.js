@@ -14,6 +14,7 @@ precision highp float;
 attribute vec3 aSphere;
 attribute vec3 aWave;
 attribute float aSeed;
+attribute float aKind;   // 0 = core particle, 1 = background star
 
 uniform float uTime;
 uniform float uIntro;
@@ -36,6 +37,20 @@ mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
 
 void main() {
   float t = uTime;
+
+  // Background star field: screen-space, slow upward drift, parallax, twinkle.
+  if (aKind > 0.5) {
+    vec2 sp = aSphere.xy;
+    sp.y = fract(sp.y * 0.5 + 0.5 + t * 0.006 * (0.4 + aSeed)) * 2.0 - 1.0;
+    sp -= uTilt * (0.25 + aSphere.z * 0.6);
+    gl_Position = vec4(sp, 0.0, 1.0);
+    gl_PointSize = (1.2 + aSeed * 2.2) * uPixel;
+    float tw = 0.5 + 0.5 * sin(t * (0.7 + aSeed * 2.3) + aSeed * 80.0);
+    vAlpha = (0.12 + 0.5 * tw * tw) * smoothstep(0.0, 1.0, uIntro) * (1.0 - uMorph * 0.6);
+    vColor = mix(mix(vec3(0.49, 0.83, 0.99), vec3(0.66, 0.55, 0.98), step(0.7, aSeed)), vec3(0.04, 0.3, 0.5), uLight);
+    return;
+  }
+
   vec3 n = aSphere;
 
   // Organic breathing on the sphere surface.
@@ -111,10 +126,19 @@ function compile(gl, type, src) {
   return sh
 }
 
-function buildGeometry(count) {
-  const sphere = new Float32Array(count * 3)
-  const wave = new Float32Array(count * 3)
-  const seed = new Float32Array(count)
+function buildGeometry(count, stars) {
+  const total = count + stars
+  const sphere = new Float32Array(total * 3)
+  const wave = new Float32Array(total * 3)
+  const seed = new Float32Array(total)
+  const kind = new Float32Array(total)
+  for (let i = count; i < total; i++) {
+    sphere[i * 3] = Math.random() * 2 - 1
+    sphere[i * 3 + 1] = Math.random() * 2 - 1
+    sphere[i * 3 + 2] = Math.random()
+    seed[i] = Math.random()
+    kind[i] = 1
+  }
   const golden = Math.PI * (3 - Math.sqrt(5))
   const cols = Math.ceil(Math.sqrt(count * 3.4))
   const rows = Math.ceil(count / cols)
@@ -136,7 +160,7 @@ function buildGeometry(count) {
 
     seed[i] = Math.random()
   }
-  return { sphere, wave, seed }
+  return { sphere, wave, seed, kind, total }
 }
 
 export function createParticleCore(canvas, { host = canvas.parentElement, reducedMotion = false, onStats } = {}) {
@@ -153,7 +177,8 @@ export function createParticleCore(canvas, { host = canvas.parentElement, reduce
   const small = Math.min(window.innerWidth, window.innerHeight) < 700
   const cores = navigator.hardwareConcurrency || 4
   const count = small ? 5200 : cores <= 4 ? 8000 : 11000
-  const geo = buildGeometry(count)
+  const stars = small ? 220 : 520
+  const geo = buildGeometry(count, stars)
 
   const bind = (name, data, size) => {
     const buf = gl.createBuffer()
@@ -166,6 +191,7 @@ export function createParticleCore(canvas, { host = canvas.parentElement, reduce
   bind('aSphere', geo.sphere, 3)
   bind('aWave', geo.wave, 3)
   bind('aSeed', geo.seed, 1)
+  bind('aKind', geo.kind, 1)
 
   const U = {}
   for (const name of ['uTime', 'uIntro', 'uMorph', 'uAspect', 'uScale', 'uOffsetY', 'uPixel', 'uSize', 'uLight', 'uMouse', 'uMouseOn', 'uTilt', 'uRipple']) {
@@ -314,7 +340,7 @@ export function createParticleCore(canvas, { host = canvas.parentElement, reduce
     gl.uniform1f(U.uMouseOn, mouse.on)
     gl.uniform2f(U.uTilt, tilt.x, tilt.y)
     gl.uniform4f(U.uRipple, ripple[0], ripple[1], ripple[2], ripple[3])
-    gl.drawArrays(gl.POINTS, 0, count)
+    gl.drawArrays(gl.POINTS, 0, geo.total)
 
     frames++
     if (onStats && ts - lastStat >= 1000) {

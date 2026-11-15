@@ -49,7 +49,6 @@ export function Projects() {
                 <button type="button" className={s.media} onClick={() => setOpenId(p.id)} tabIndex={-1} aria-hidden="true">
                   <Cover seed={p.id} image={p.image} alt="" className={s.cover} />
                   <span className={s.status} data-status={status}>
-                    {status === 'live' && <span className={s.liveDot} />}
                     {status === 'github' && <GithubLogo size={13} weight="bold" />}
                     {status === 'private' && <LockSimple size={12} weight="bold" />}
                     {STATUS_LABEL[status]}
@@ -86,7 +85,7 @@ export function Projects() {
                     </button>
                     {link && (
                       <a className={s.ext} href={link} target="_blank" rel="noopener noreferrer" aria-label={`${status === 'live' ? 'Visit' : 'View source of'} ${p.title}`}>
-                        {status === 'live' ? <span className={s.liveDot} /> : <GithubLogo size={17} />}
+                        {status === 'live' ? <ArrowUpRight size={16} weight="bold" /> : <GithubLogo size={17} />}
                         {status === 'live' ? 'Visit' : 'Code'}
                       </a>
                     )}

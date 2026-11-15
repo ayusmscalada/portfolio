@@ -35,15 +35,15 @@
 }
 
 .statement {
-  font-size: clamp(1.25rem, 1.05rem + 0.9vw, 1.75rem);
+  font-size: clamp(1.05rem, 0.98rem + 0.35vw, 1.25rem);
   font-weight: 600;
-  line-height: 1.35;
+  line-height: 1.5;
   letter-spacing: -0.025em;
   margin-bottom: 22px;
 }
 
 .para {
-  font-size: clamp(1rem, 0.96rem + 0.2vw, 1.12rem);
+  font-size: clamp(0.94rem, 0.9rem + 0.12vw, 1rem);
   line-height: 1.75;
   color: var(--text-muted);
   margin-bottom: 16px;
@@ -86,7 +86,7 @@
   font-size: 11px;
   letter-spacing: 0.04em;
   text-transform: none;
-  color: var(--ok);
+  color: var(--text-dim);
 }
 
 .now dl {
