@@ -1,0 +1,638 @@
+{
+  "version": 1,
+  "profile": {
+    "firstName": "Anderson",
+    "lastName": "Nascimento",
+    "role": "Full-stack AI Engineer",
+    "monogram": "AN",
+    "headline": "Resilient systems. *Expressive* interfaces. Real impact.",
+    "heroTags": [
+      "React",
+      "TypeScript",
+      "Node.js",
+      "PostgreSQL",
+      "AWS",
+      "GraphQL"
+    ],
+    "building": [
+      "realtime platforms",
+      "payment infrastructure",
+      "design systems",
+      "developer tools"
+    ],
+    "domain": "andersondev774@gmail.com",
+    "tagline": "I design and build *resilient* systems and *expressive* interfaces — from the database row to the last pixel.",
+    "location": "City, Country",
+    "timezone": "America/New_York",
+    "timezoneLabel": "EST",
+    "email": "hello@yourname.dev",
+    "resumeUrl": "",
+    "availability": {
+      "open": true,
+      "short": "Available",
+      "label": "Open to senior & staff roles — from Q1 2027"
+    },
+    "since": 2016,
+    "focus": [
+      "React",
+      "Node.js",
+      "PostgreSQL",
+      "AWS"
+    ],
+    "socials": [
+      {
+        "label": "GitHub",
+        "icon": "github",
+        "handle": "@yourhandle",
+        "url": "https://github.com/yourhandle"
+      },
+      {
+        "label": "LinkedIn",
+        "icon": "linkedin",
+        "handle": "in/yourname",
+        "url": "https://www.linkedin.com/in/yourname"
+      },
+      {
+        "label": "X / Twitter",
+        "icon": "x",
+        "handle": "@yourhandle",
+        "url": "https://x.com/yourhandle"
+      },
+      {
+        "label": "Writing",
+        "icon": "writing",
+        "handle": "yourname.dev/notes",
+        "url": "https://yourname.dev/notes"
+      }
+    ]
+  },
+  "about": {
+    "title": "The human *behind* the code.",
+    "lede": "Engineer by trade, product-minded by habit. I care about the whole path, not just my slice of it.",
+    "statement": "I build software end-to-end — the query plan, the API contract, the render, and the *moment* a person actually feels it.",
+    "paragraphs": [
+      "For {years}+ years I've shipped products for startups and scale-ups: realtime platforms, payment systems, internal tools and design systems. I'm happiest where the hard problems cross boundaries — when a slow screen is really a missing index, or a flaky feature is really a contract nobody wrote down.",
+      "I like small teams, short feedback loops and boring infrastructure that lets the product be bold. Replace this copy with your own story: where you started, what you got obsessed with, and what you want to build next."
+    ],
+    "now": [
+      {
+        "label": "Building",
+        "value": "A realtime sync engine for collaborative tools"
+      },
+      {
+        "label": "Learning",
+        "value": "Rust for latency-critical services"
+      },
+      {
+        "label": "Reading",
+        "value": "Designing Data-Intensive Applications (again)"
+      }
+    ],
+    "stats": [
+      {
+        "value": "{years}",
+        "suffix": "+",
+        "label": "Years in production"
+      },
+      {
+        "value": 40,
+        "suffix": "+",
+        "label": "Releases shipped"
+      },
+      {
+        "value": 99.98,
+        "decimals": 2,
+        "suffix": "%",
+        "label": "Uptime held"
+      },
+      {
+        "value": 2,
+        "suffix": "M+",
+        "label": "Users served"
+      }
+    ],
+    "principles": [
+      {
+        "title": "Ship small, ship often",
+        "body": "Tiny, reversible changes beat heroic launches. Feature flags over feature branches."
+      },
+      {
+        "title": "Boring tech, bold product",
+        "body": "Spend novelty where users can see it. Keep the foundations proven and observable."
+      },
+      {
+        "title": "Performance is a feature",
+        "body": "Latency budgets are product decisions. I measure first, then make it fast."
+      },
+      {
+        "title": "Leave it better",
+        "body": "Docs, tests and a clean handover are part of done — not a follow-up ticket."
+      }
+    ]
+  },
+  "capabilities": {
+    "title": "My *technologies*.",
+    "lede": "Every layer of the stack, from the query plan to the last pixel. Dots show depth: core, fluent, exploring.",
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/frontend",
+        "icon": "code",
+        "level": 92,
+        "title": "Interfaces & product engineering",
+        "description": "Accessible, fast, design-system-driven UIs. I live in the gap between design and code: motion, states, edge cases, and the details that make software feel considered.",
+        "latency": 12,
+        "tiers": [
+          {
+            "name": "core",
+            "items": [
+              "React",
+              "TypeScript",
+              "Next.js",
+              "CSS architecture"
+            ]
+          },
+          {
+            "name": "fluent",
+            "items": [
+              "Vite",
+              "TanStack Query",
+              "Zustand",
+              "Storybook",
+              "Web Animations"
+            ]
+          },
+          {
+            "name": "exploring",
+            "items": [
+              "React Server Components",
+              "View Transitions API"
+            ]
+          }
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/backend",
+        "icon": "cpu",
+        "level": 88,
+        "title": "APIs & distributed services",
+        "description": "Well-typed, well-documented APIs with clear contracts. Event-driven where it helps, a plain monolith where it does not.",
+        "latency": 24,
+        "tiers": [
+          {
+            "name": "core",
+            "items": [
+              "Node.js",
+              "TypeScript",
+              "REST",
+              "GraphQL"
+            ]
+          },
+          {
+            "name": "fluent",
+            "items": [
+              "NestJS",
+              "Fastify",
+              "Go",
+              "Python",
+              "tRPC"
+            ]
+          },
+          {
+            "name": "exploring",
+            "items": [
+              "Rust",
+              "Effect-TS"
+            ]
+          }
+        ]
+      },
+      {
+        "method": "PUT",
+        "path": "/data",
+        "icon": "database",
+        "level": 85,
+        "title": "Data modelling & storage",
+        "description": "Schemas that age well, migrations that do not wake anyone up, and queries that stay fast at 100× the data.",
+        "latency": 31,
+        "tiers": [
+          {
+            "name": "core",
+            "items": [
+              "PostgreSQL",
+              "Redis",
+              "Prisma / Drizzle"
+            ]
+          },
+          {
+            "name": "fluent",
+            "items": [
+              "MongoDB",
+              "Kafka",
+              "Elasticsearch",
+              "S3"
+            ]
+          },
+          {
+            "name": "exploring",
+            "items": [
+              "ClickHouse",
+              "pgvector"
+            ]
+          }
+        ]
+      },
+      {
+        "method": "PATCH",
+        "path": "/infrastructure",
+        "icon": "cloud",
+        "level": 80,
+        "title": "Cloud, delivery & reliability",
+        "description": "Infrastructure as code, pipelines that go green in minutes, and enough observability to answer “why” before anyone asks.",
+        "latency": 18,
+        "tiers": [
+          {
+            "name": "core",
+            "items": [
+              "AWS",
+              "Docker",
+              "Terraform",
+              "GitHub Actions"
+            ]
+          },
+          {
+            "name": "fluent",
+            "items": [
+              "Kubernetes",
+              "Cloudflare",
+              "Vercel",
+              "Grafana"
+            ]
+          },
+          {
+            "name": "exploring",
+            "items": [
+              "OpenTelemetry",
+              "Nix"
+            ]
+          }
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/practices",
+        "icon": "compass",
+        "level": 90,
+        "title": "How I work",
+        "description": "The non-code parts of the job that make the code matter: testing strategy, reviews, mentoring and writing things down.",
+        "latency": 9,
+        "tiers": [
+          {
+            "name": "core",
+            "items": [
+              "Testing (unit → e2e)",
+              "Code review",
+              "System design",
+              "Accessibility"
+            ]
+          },
+          {
+            "name": "fluent",
+            "items": [
+              "Mentoring",
+              "Technical writing",
+              "Incident response"
+            ]
+          },
+          {
+            "name": "exploring",
+            "items": [
+              "AI-assisted workflows"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "projectsIntro": {
+    "title": "Selected *work*.",
+    "lede": "Products I have designed, built and run in production. Open any card for the full case study."
+  },
+  "projects": [
+    {
+      "id": "atlas",
+      "title": "Atlas",
+      "kicker": "Realtime logistics platform",
+      "year": 2025,
+      "role": "Lead engineer",
+      "stack": [
+        "React",
+        "TypeScript",
+        "Node.js",
+        "PostgreSQL",
+        "WebSockets",
+        "AWS"
+      ],
+      "summary": "Live tracking and dispatch for 12,000 vehicles, with sub-second updates from the road to the ops dashboard.",
+      "metrics": [
+        {
+          "value": "−63%",
+          "label": "p95 latency"
+        },
+        {
+          "value": "12k",
+          "label": "vehicles live"
+        },
+        {
+          "value": "99.98%",
+          "label": "uptime"
+        }
+      ],
+      "caseStudy": [
+        {
+          "heading": "Problem",
+          "body": "Dispatchers were working from a map that lagged up to 30 seconds behind reality, and the polling backend fell over at peak."
+        },
+        {
+          "heading": "Approach",
+          "body": "Replaced polling with a WebSocket fan-out backed by Postgres logical replication, partitioned by region. Rebuilt the map layer to diff updates instead of re-rendering."
+        },
+        {
+          "heading": "Outcome",
+          "body": "Updates land in under 400ms end-to-end. Infrastructure cost dropped 35% while handling 4× the traffic."
+        }
+      ],
+      "links": {
+        "live": "https://example.com",
+        "repo": ""
+      },
+      "image": "/images/atlas-preview.webp"
+    },
+    {
+      "id": "ledgerline",
+      "title": "Ledgerline",
+      "kicker": "Double-entry payments ledger",
+      "year": 2024,
+      "role": "Backend lead",
+      "stack": [
+        "Node.js",
+        "TypeScript",
+        "PostgreSQL",
+        "Kafka",
+        "Terraform"
+      ],
+      "summary": "An auditable, idempotent ledger service that became the source of truth for every cent moving through the platform.",
+      "metrics": [
+        {
+          "value": "$40M+",
+          "label": "monthly volume"
+        },
+        {
+          "value": "0",
+          "label": "reconciliation gaps"
+        },
+        {
+          "value": "3ms",
+          "label": "median write"
+        }
+      ],
+      "caseStudy": [
+        {
+          "heading": "Problem",
+          "body": "Balances were computed from five different tables. Finance reconciled by hand every month, and every edge case was a support ticket."
+        },
+        {
+          "heading": "Approach",
+          "body": "Designed an append-only double-entry model with idempotency keys and event sourcing to Kafka. Wrote property-based tests for every invariant."
+        },
+        {
+          "heading": "Outcome",
+          "body": "Month-end close went from four days to an automated report. Zero balance discrepancies since launch."
+        }
+      ],
+      "links": {
+        "live": "",
+        "repo": ""
+      },
+      "image": "/images/ledgerline-preview.webp"
+    },
+    {
+      "id": "fieldnotes",
+      "title": "Fieldnotes",
+      "kicker": "Collaborative editor with CRDTs",
+      "year": 2023,
+      "role": "Full-stack engineer",
+      "stack": [
+        "React",
+        "TypeScript",
+        "Redis",
+        "WebSockets"
+      ],
+      "summary": "A local-first, multiplayer document editor that works offline and merges cleanly when you reconnect.",
+      "metrics": [
+        {
+          "value": "50",
+          "label": "live cursors / doc"
+        },
+        {
+          "value": "<50ms",
+          "label": "sync on LAN"
+        }
+      ],
+      "caseStudy": [
+        {
+          "heading": "Problem",
+          "body": "Teams in the field needed to take structured notes with patchy connectivity, without overwriting each other."
+        },
+        {
+          "heading": "Approach",
+          "body": "Built on Yjs CRDTs with a Redis-backed presence layer and a custom React binding that keeps renders scoped to the changed block."
+        },
+        {
+          "heading": "Outcome",
+          "body": "Shipped to 3,000 field researchers; offline edits merge without conflicts."
+        }
+      ],
+      "links": {
+        "live": "",
+        "repo": "https://github.com/yourhandle/fieldnotes"
+      },
+      "image": ""
+    },
+    {
+      "id": "pulse",
+      "title": "Pulse",
+      "kicker": "Design system & data-viz kit",
+      "year": 2022,
+      "role": "Frontend lead",
+      "stack": [
+        "React",
+        "TypeScript",
+        "D3",
+        "Storybook"
+      ],
+      "summary": "A themeable component library and chart kit adopted by four product teams, documented down to the motion curves.",
+      "metrics": [
+        {
+          "value": "120+",
+          "label": "components"
+        },
+        {
+          "value": "−40%",
+          "label": "UI defects"
+        }
+      ],
+      "caseStudy": [
+        {
+          "heading": "Problem",
+          "body": "Four teams, four button styles, and charts that broke on every new dataset."
+        },
+        {
+          "heading": "Approach",
+          "body": "Token-driven theming, headless primitives with accessible defaults, and a chart grammar built on D3 scales with React rendering."
+        },
+        {
+          "heading": "Outcome",
+          "body": "Teams ship UI roughly twice as fast. Accessibility audits pass by default."
+        }
+      ],
+      "links": {
+        "live": "",
+        "repo": ""
+      },
+      "image": ""
+    },
+    {
+      "id": "hatch",
+      "title": "Hatch",
+      "kicker": "Open-source project scaffolder",
+      "year": 2021,
+      "role": "Author & maintainer",
+      "stack": [
+        "Node.js",
+        "TypeScript",
+        "CLI"
+      ],
+      "summary": "A zero-config CLI that scaffolds typed full-stack apps with tests, CI and deploy targets wired up.",
+      "metrics": [
+        {
+          "value": "2.1k",
+          "label": "GitHub stars"
+        },
+        {
+          "value": "40",
+          "label": "contributors"
+        }
+      ],
+      "caseStudy": [
+        {
+          "heading": "Problem",
+          "body": "Every new service started with two days of copy-pasting configs from the last one."
+        },
+        {
+          "heading": "Approach",
+          "body": "Composable templates, a plugin API and snapshot-tested generators."
+        },
+        {
+          "heading": "Outcome",
+          "body": "Used by teams at several companies; new services go from idea to deploy in under an hour."
+        }
+      ],
+      "links": {
+        "live": "",
+        "repo": "https://github.com/yourhandle/hatch"
+      },
+      "image": ""
+    }
+  ],
+  "experience": {
+    "title": "The *journey* so far.",
+    "lede": "Roles, newest first, each with what actually changed because I was there.",
+    "roles": [
+      {
+        "company": "Company One",
+        "role": "Senior Full-stack Engineer",
+        "start": "2023",
+        "end": null,
+        "location": "Remote",
+        "ref": "HEAD → main",
+        "summary": "Tech lead on the core platform team, owning the realtime data layer and the customer-facing dashboard.",
+        "highlights": [
+          "Cut p95 API latency from 820ms to 190ms by redesigning the caching and query layer",
+          "Led the migration from a legacy monolith to typed services with zero customer-facing downtime",
+          "Introduced a design system that reduced UI defects by ~40% across four product teams",
+          "Mentored five engineers; two promoted to senior within 18 months"
+        ],
+        "stack": [
+          "React",
+          "TypeScript",
+          "Node.js",
+          "PostgreSQL",
+          "AWS"
+        ]
+      },
+      {
+        "company": "Company Two",
+        "role": "Full-stack Engineer",
+        "start": "2020",
+        "end": "2023",
+        "location": "Hybrid · City",
+        "ref": "tag: v2.0",
+        "summary": "Early engineer at a fintech scale-up; built payment flows and the internal tooling that ran operations.",
+        "highlights": [
+          "Built a double-entry ledger service processing $40M+ per month",
+          "Shipped onboarding that lifted activation from 31% to 52%",
+          "Set up CI/CD and preview environments; deploys went from weekly to 20+ per day"
+        ],
+        "stack": [
+          "Next.js",
+          "NestJS",
+          "PostgreSQL",
+          "Kafka",
+          "Terraform"
+        ]
+      },
+      {
+        "company": "Company Three",
+        "role": "Frontend Engineer",
+        "start": "2018",
+        "end": "2020",
+        "location": "On-site · City",
+        "summary": "Product engineer on a B2B analytics suite with heavy data visualisation.",
+        "highlights": [
+          "Rebuilt the charting engine on canvas, rendering 1M+ points at 60fps",
+          "Drove the accessibility programme to WCAG 2.1 AA"
+        ],
+        "stack": [
+          "React",
+          "Redux",
+          "D3",
+          "GraphQL"
+        ]
+      },
+      {
+        "company": "Independent",
+        "role": "Freelance Web Developer",
+        "start": "2016",
+        "end": "2018",
+        "location": "Remote",
+        "ref": "initial commit",
+        "summary": "Websites and web apps for agencies and small businesses. Learned to own everything end-to-end.",
+        "highlights": [
+          "Delivered 25+ client projects from discovery to deployment"
+        ],
+        "stack": [
+          "JavaScript",
+          "PHP",
+          "MySQL",
+          "WordPress"
+        ]
+      }
+    ]
+  },
+  "contact": {
+    "title": "Let's build something *worth* shipping.",
+    "lede": "Have a product to launch, a system to scale, or a team to join? I reply within a day."
+  }
+}

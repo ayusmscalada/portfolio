@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { ArrowDown, ArrowUpRight } from '@/components/ph.jsx'
-import { profile, fullName } from '@/data/profile.js'
-import { about } from '@/data/about.js'
-import { ParticleCore } from '@/components/ParticleCore/ParticleCore.jsx'
+import { useContent } from '@/content/ContentContext.jsx'
 import { SplitText } from '@/components/motion/SplitText.jsx'
 import { useFinePointer, useReducedMotion } from '@/hooks/useMediaQuery.js'
 import s from './Hero.module.css'
@@ -28,17 +26,18 @@ function RotatingWord({ words }) {
   )
 }
 
-const LOG = [
+const makeLog = (domain) => [
   ['$', 'git push origin main'],
   ['✓', 'tests passed · 412 specs'],
   ['✓', 'build · 1.8s'],
-  ['→', `deploy edge · ${profile.domain}`],
+  ['→', `deploy edge · ${domain}`],
   ['✓', 'p95 latency · 182ms'],
   ['✓', 'shipped'],
 ]
 
 /** Mini terminal that types a deploy log on a loop. */
-function Terminal() {
+function Terminal({ domain }) {
+  const LOG = makeLog(domain)
   const reduced = useReducedMotion()
   const [n, setN] = useState(1)
   useEffect(() => {
@@ -70,8 +69,9 @@ export function Hero() {
   const hostRef = useRef(null)
   const fine = useFinePointer()
   const reduced = useReducedMotion()
+  const { profile, fullName, about } = useContent()
   const tags = profile.heroTags ?? profile.focus
-  const stat = about.stats[0]
+  const stat = about.stats[0] ?? { value: 0, label: '' }
 
   // Pointer parallax for the floating scene (two CSS vars, once per frame).
   useEffect(() => {
@@ -99,23 +99,7 @@ export function Hero() {
   }, [fine, reduced])
 
   return (
-    <section ref={hostRef} id="top" className={s.hero} aria-labelledby="hero-title">
-      <div className={s.grid} aria-hidden="true" />
-
-      {/* Orbit rings around the core */}
-      <div className={s.orbits} aria-hidden="true">
-        <div className={`${s.orbit} ${s.orbitA}`}>
-          <span className={s.sat} />
-        </div>
-        <div className={`${s.orbit} ${s.orbitB}`}>
-          <span className={s.sat} />
-          <span className={`${s.sat} ${s.satB}`} />
-        </div>
-        <div className={`${s.orbit} ${s.orbitC}`} />
-      </div>
-
-      <ParticleCore hostRef={hostRef} />
-
+    <section ref={hostRef} id="top" className={s.hero} aria-labelledby="hero-title" data-stage="hero">
       {/* Floating scene: stack chips and glass panels */}
       <div className={s.scene} aria-hidden="true">
         {tags.slice(0, 6).map((t, i) => (
@@ -136,7 +120,7 @@ export function Hero() {
           </svg>
         </div>
 
-        <Terminal />
+        <Terminal domain={profile.domain} />
       </div>
 
       <div className={s.content}>

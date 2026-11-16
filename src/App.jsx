@@ -11,6 +11,7 @@ import { Capabilities } from '@/sections/Capabilities/Capabilities.jsx'
 import { Experience } from '@/sections/Experience/Experience.jsx'
 import { Projects } from '@/sections/Projects/Projects.jsx'
 import { Contact } from '@/sections/Contact/Contact.jsx'
+import { World } from '@/world/World.jsx'
 
 /**
  * One delegated listener powers the cursor spotlight on every [data-spot]
@@ -48,10 +49,7 @@ export default function App() {
       <a href="#main" className="skip-link">
         Skip to content
       </a>
-      <div className="aurora" aria-hidden="true">
-        <span />
-        <span />
-      </div>
+      <World />
       <Hud />
       <SocialRail />
       <CursorFX />

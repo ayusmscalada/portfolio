@@ -111,8 +111,8 @@ export function ProjectSheet({ project, list, recordNo, onNavigate, onClose }) {
               </dl>
             )}
 
-            {Object.entries(p.caseStudy ?? {}).map(([heading, text], i) => (
-              <section key={heading} className={s.block}>
+            {(p.caseStudy ?? []).map(({ heading, body: text }, i) => (
+              <section key={i} className={s.block}>
                 <h3>
                   <span className={s.blockIdx}>{String(i + 1).padStart(2, '0')}</span>
                   {heading}

@@ -12,6 +12,19 @@
     <meta name="theme-color" content="#050a14" />
     <link rel="icon" type="image/svg+xml" href="%PROFILE_FAVICON%" />
     <script>
+      // Start loading site content from Supabase right away, in parallel with
+      // the JS bundle (read-only, public anon key). main.jsx awaits it.
+      ;(function () {
+        var url = '%VITE_SUPABASE_URL%'.replace(/\/+$/, '')
+        var key = '%VITE_SUPABASE_ANON_KEY%'
+        if (url.indexOf('http') !== 0 || location.search.indexOf('preview') !== -1) return
+        window.__content = fetch(url + '/rest/v1/portfolio_content?id=eq.1&select=content', { headers: { apikey: key } })
+          .then(function (r) { return r.ok ? r.json() : null })
+          .then(function (rows) { return (rows && rows[0] && rows[0].content) || null })
+          .catch(function () { return null })
+      })()
+    </script>
+    <script>
       // Apply saved theme/accent before first paint (no flash).
       ;(function () {
         try {

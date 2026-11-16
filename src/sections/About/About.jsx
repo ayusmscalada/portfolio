@@ -1,20 +1,18 @@
-import { about } from '@/data/about.js'
-import { profile } from '@/data/profile.js'
+import { useContent } from '@/content/ContentContext.jsx'
 import { SectionHead } from '@/components/SectionHead/SectionHead.jsx'
 import { Reveal } from '@/components/motion/Reveal.jsx'
 import { Counter } from '@/components/motion/Counter.jsx'
-import { Emblem } from '@/components/Emblem/Emblem.jsx'
 import { Rich } from '@/lib/rich.jsx'
 import s from './About.module.css'
 
 export function About() {
+  const { about, profile } = useContent()
   return (
-    <section id="about" className={s.section} aria-labelledby="about-title">
+    <section id="about" className={s.section} aria-labelledby="about-title" data-stage="about">
       <div className="wrap">
         <div className={s.grid}>
-          <Reveal className={s.visual}>
-            <Emblem />
-          </Reveal>
+          {/* The 3D crest from the world floats in this column. */}
+          <div className={s.visual} aria-hidden="true" />
 
           <div className={s.copy}>
             <SectionHead id="about" badge="About me" title={about.title} align="start" size="sm" />

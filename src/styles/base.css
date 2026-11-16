@@ -309,10 +309,6 @@ html { scroll-padding-top: 88px; }
 
 /* Skip layout/paint for sections until they near the viewport: keeps the
    first paint as cheap as the hero alone. `auto` remembers real sizes. */
-main > section:not(#top) {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 1100px;
-}
 body { font-family: var(--font-sans); }
 
 /* *Emphasis* in headings becomes an animated cyan → violet gradient. */

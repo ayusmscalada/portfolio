@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { profile } from '@/data/profile.js'
+import { useContent } from '@/content/ContentContext.jsx'
 import { sections } from '@/data/sections.js'
 import { useUI } from '@/context/UIContext.jsx'
 import { scrollToId } from '@/lib/scrollTo.js'
@@ -7,6 +7,7 @@ import s from './CommandPalette.module.css'
 
 function useCommands() {
   const { theme, toggleTheme, accent, cycleAccent, motion, toggleMotion, copyEmail } = useUI()
+  const { profile } = useContent()
 
   return useMemo(
     () =>
@@ -52,7 +53,7 @@ function useCommands() {
           run: () => window.open(so.url, '_blank', 'noopener,noreferrer'),
         })),
       ].filter(Boolean),
-    [theme, toggleTheme, accent, cycleAccent, motion, toggleMotion, copyEmail],
+    [theme, toggleTheme, accent, cycleAccent, motion, toggleMotion, copyEmail, profile],
   )
 }
 

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { List, Moon, Pause, Play, Sun } from '@/components/ph.jsx'
-import { fullName, profile } from '@/data/profile.js'
+import { useContent } from '@/content/ContentContext.jsx'
 import { sections } from '@/data/sections.js'
 import { useUI } from '@/context/UIContext.jsx'
 import { useScrollSpy } from '@/lib/scrollSpy.js'
@@ -13,6 +13,7 @@ const navSections = sections.filter((sec) => sec.nav !== false)
 
 export function Hud() {
   const { theme, toggleTheme, motion, toggleMotion, openPalette } = useUI()
+  const { fullName, profile } = useContent()
   const index = useScrollSpy((st) => st.index)
   const scrolled = useScrollSpy((st) => st.progress > 0.002)
   const active = sections[index]?.id

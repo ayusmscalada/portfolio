@@ -1,6 +1,6 @@
 import { useId, useRef } from 'react'
 import { useInView } from '@/hooks/useInView.js'
-import { profile } from '@/data/profile.js'
+import { useContent } from '@/content/ContentContext.jsx'
 import s from './Emblem.module.css'
 
 /* Faceted crest: symmetric outline with wing spikes and a keel point. */
@@ -27,7 +27,7 @@ const SPARKS = [
 export function Emblem({ variant = 'full', className = '', label }) {
   const uid = useId().replace(/:/g, '')
   const id = (n) => `${n}-${uid}`
-  const mono = (profile.monogram || `${profile.firstName[0]}${profile.lastName[0]}`).slice(0, 2).toUpperCase()
+  const { profile, monogram: mono } = useContent()
   const full = variant === 'full'
   const [viewRef, inView] = useInView({ once: false, rootMargin: '0px', threshold: 0 })
   const tiltRef = useRef(null)

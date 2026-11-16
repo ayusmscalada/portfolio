@@ -1,5 +1,5 @@
 import { ArrowUp, Copy, EnvelopeSimple } from '@/components/ph.jsx'
-import { profile, fullName } from '@/data/profile.js'
+import { useContent } from '@/content/ContentContext.jsx'
 import { useUI } from '@/context/UIContext.jsx'
 import { SectionHead } from '@/components/SectionHead/SectionHead.jsx'
 import { Reveal } from '@/components/motion/Reveal.jsx'
@@ -12,17 +12,18 @@ import s from './Contact.module.css'
 
 export function Contact() {
   const { copyEmail, openPalette } = useUI()
+  const { profile, fullName, contact } = useContent()
   const year = new Date().getFullYear()
 
   return (
-    <section id="contact" className={s.section} aria-labelledby="contact-title">
+    <section id="contact" className={s.section} aria-labelledby="contact-title" data-stage="contact">
       <div className={s.glow} aria-hidden="true" />
       <div className="wrap">
         <SectionHead
           id="contact"
           badge="Contact"
-          title="Let's build something *worth* shipping."
-          lede="Have a product to launch, a system to scale, or a team to join? I reply within a day."
+          title={contact.title}
+          lede={contact.lede}
         />
 
         <Reveal className={s.panel} data-spot>

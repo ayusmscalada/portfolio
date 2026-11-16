@@ -1,9 +1,10 @@
-import { profile } from '@/data/profile.js'
+import { useContent } from '@/content/ContentContext.jsx'
 import { socialIcons } from '@/components/icons.js'
 import s from './SocialRail.module.css'
 
 /** Fixed vertical rail of contact links (wide screens only). */
 export function SocialRail() {
+  const { profile } = useContent()
   const links = [
     { label: 'Email', icon: 'email', url: `mailto:${profile.email}` },
     ...profile.socials.filter((so) => socialIcons[so.icon]),

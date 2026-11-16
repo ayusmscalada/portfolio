@@ -16,28 +16,6 @@
   cursor: pointer;
 }
 
-/* Faint blueprint grid fading out from the center. */
-.grid {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background-image:
-    linear-gradient(var(--grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-  background-size: 56px 56px;
-  mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, #000 30%, transparent 75%);
-}
-
-.hero::after {
-  content: '';
-  position: absolute;
-  inset: auto 0 0;
-  height: 30%;
-  z-index: 1;
-  background: linear-gradient(transparent, var(--bg));
-  pointer-events: none;
-}
-
 .content {
   position: relative;
   z-index: 2;
@@ -282,74 +260,6 @@
 
 .content { z-index: 3; }
 
-.orbits {
-  --core: min(78vh, 86vw);
-  position: absolute;
-  z-index: 0;
-  left: 50%;
-  top: 45%;
-  width: var(--core);
-  height: var(--core);
-  translate: -50% -50%;
-  pointer-events: none;
-}
-
-.orbit {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  border: 1px solid rgb(125 211 252 / 0.2);
-}
-
-.orbitA {
-  inset: -14%;
-  transform: rotateX(74deg) rotateY(-14deg) rotateZ(0deg);
-  animation: orbitA 24s linear infinite;
-}
-
-.orbitB {
-  inset: -28%;
-  border-color: rgb(167 139 250 / 0.16);
-  transform: rotateX(68deg) rotateY(18deg) rotateZ(0deg);
-  animation: orbitB 38s linear infinite reverse;
-}
-
-.orbitC {
-  inset: -6%;
-  border: 1px dashed rgb(125 211 252 / 0.14);
-  transform: rotateX(80deg) rotateZ(0deg);
-  animation: orbitC 60s linear infinite;
-}
-
-@keyframes orbitA {
-  to { transform: rotateX(74deg) rotateY(-14deg) rotateZ(360deg); }
-}
-@keyframes orbitB {
-  to { transform: rotateX(68deg) rotateY(18deg) rotateZ(360deg); }
-}
-@keyframes orbitC {
-  to { transform: rotateX(80deg) rotateZ(360deg); }
-}
-
-.sat {
-  position: absolute;
-  left: 50%;
-  top: -6px;
-  width: 12px;
-  height: 12px;
-  margin-left: -6px;
-  border-radius: 50%;
-  background: #e0f2fe;
-  box-shadow: 0 0 12px 3px rgb(56 189 248 / 0.8), 0 0 30px 8px rgb(56 189 248 / 0.35);
-}
-
-.satB {
-  top: auto;
-  bottom: -6px;
-  background: #ede9fe;
-  box-shadow: 0 0 12px 3px rgb(167 139 250 / 0.8), 0 0 30px 8px rgb(167 139 250 / 0.3);
-}
-
 .scene {
   position: absolute;
   inset: 0;
@@ -547,16 +457,12 @@
 
 @media (prefers-reduced-motion: no-preference) {
   .scene { animation: fade 1.4s ease 0.9s both; }
-  .orbits { animation: fade 1.6s ease 0.4s both; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .orbit, .chip, .panel, .spark path, .terminal li, .terminal li:last-child::after { animation: none; }
   .spark path { stroke-dashoffset: 0; }
   .chip, .panel { translate: none; }
 }
-
-:global([data-theme='light']) .orbit { border-color: rgb(3 105 161 / 0.2); }
 :global([data-theme='light']) .chip,
 :global([data-theme='light']) .panel { box-shadow: 0 10px 30px -14px rgb(16 73 110 / 0.35); }
 
@@ -573,7 +479,6 @@
 }
 
 @media (max-width: 560px) {
-  .orbits { top: 40%; }
   .chip[data-slot='3'] { display: none; }
   .chip[data-slot='0'] { top: 13%; }
   .chip[data-slot='1'] { top: 21%; }

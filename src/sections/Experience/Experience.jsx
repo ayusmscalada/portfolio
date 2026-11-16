@@ -1,10 +1,11 @@
-import { experience } from '@/data/experience.js'
+import { useContent } from '@/content/ContentContext.jsx'
 import { SectionHead } from '@/components/SectionHead/SectionHead.jsx'
 import { Reveal } from '@/components/motion/Reveal.jsx'
 import { shortSha } from '@/lib/hash.js'
 import s from './Experience.module.css'
 
 export function Experience() {
+  const { experience } = useContent()
   const { roles } = experience
 
   return (
@@ -17,8 +18,8 @@ export function Experience() {
             <span className={s.fill} />
           </span>
           <ol className={s.list}>
-          {roles.map((r) => (
-            <li key={`${r.company}-${r.role}`} className={s.item} data-current={r.end == null}>
+          {roles.map((r, i) => (
+            <li key={`${r.company}-${r.role}-${i}`} className={s.item} data-current={r.end == null} data-stage={`role-${i}`}>
               <span className={s.node} aria-hidden="true" />
               <Reveal className={s.card} delay={60} data-spot>
                 <div className={s.meta}>

@@ -1,13 +1,15 @@
 import { readFileSync } from 'node:fs'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { profile } from './src/data/profile.js'
+
+const readContent = () => JSON.parse(readFileSync(new URL('./src/data/content.json', import.meta.url), 'utf8'))
 
 /**
  * Keeps <title>, meta tags and the favicon monogram in index.html in sync with
- * src/data/profile.js, so your name and role live in exactly one place.
+ * src/data/content.json, so your name and role live in exactly one place.
  */
 function profileMeta() {
+  const { profile } = readContent()
   const name = `${profile.firstName} ${profile.lastName}`
   const monogram = (profile.monogram || `${profile.firstName[0]}${profile.lastName[0]}`).slice(0, 2).toUpperCase()
   const favicon = readFileSync(new URL('./public/favicon.svg', import.meta.url), 'utf8')
@@ -65,8 +67,10 @@ export default defineConfig({
   css: { postcss: { plugins: [motionAttr] } },
   // Bind to IPv4 loopback explicitly. "localhost" can resolve to IPv6 (::1),
   // which is unreachable on some Windows setups (VPN/proxy software).
-  server: { host: '127.0.0.1' },
-  preview: { host: '127.0.0.1' },
+  // Fixed ports: a second `npm run dev` fails ("port in use") instead of
+  // silently opening another server on 5174, 5175, …
+  server: { host: '127.0.0.1', port: 5173, strictPort: true },
+  preview: { host: '127.0.0.1', port: 4173, strictPort: true },
   resolve: {
     // Root-relative on purpose: an absolute path here can differ in drive-letter
     // case on Windows (c:\ vs C:\), which makes the bundler load React twice.

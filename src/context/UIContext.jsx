@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
-import { profile } from '@/data/profile.js'
+import { useContent } from '@/content/ContentContext.jsx'
 import { isReducedMotion, setMotion } from '@/lib/motion.js'
 
 const UIContext = createContext(null)
@@ -24,6 +24,7 @@ export function UIProvider({ children }) {
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [toast, setToast] = useState(null)
   const toastTimer = useRef(0)
+  const { profile } = useContent()
 
   /* ---- toast ---------------------------------------------------------- */
   const notify = useCallback((message) => {
@@ -87,7 +88,7 @@ export function UIProvider({ children }) {
     } catch {
       window.location.href = `mailto:${profile.email}`
     }
-  }, [notify])
+  }, [notify, profile.email])
 
   /* ---- palette + global hotkeys (⌘K / Ctrl+K, and "/") ---------------- */
   const openPalette = useCallback(() => setPaletteOpen(true), [])
