@@ -60,7 +60,7 @@ function NotConfigured() {
         <span className={s.loginIcon}>{Icon.lock}</span>
         <h1>Connect Supabase</h1>
         <p>
-          Add <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code> to <code>.env.local</code> (and to your host's environment variables), run{' '}
+          Add <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> to <code>.env.local</code> (and to your host's environment variables), run{' '}
           <code>supabase/setup.sql</code> in the Supabase SQL editor, then restart the dev server.
         </p>
       </div>

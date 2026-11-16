@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 
 const readContent = () => JSON.parse(readFileSync(new URL('./src/data/content.json', import.meta.url), 'utf8'))
@@ -62,8 +62,50 @@ const motionAttr = {
   },
 }
 
-export default defineConfig({
-  plugins: [react(), profileMeta()],
+/**
+ * Supabase settings come from SUPABASE_URL and SUPABASE_ANON_KEY (.env.local or
+ * the host's environment). Only these two values are passed to the browser,
+ * nothing else from the environment. The URL may be given with or without the
+ * /rest/v1 suffix. A secret / service_role key is never shipped: it would give
+ * every visitor full database access.
+ */
+function supabaseEnv(mode) {
+  const env = loadEnv(mode, process.cwd(), '')
+  const url = (env.SUPABASE_URL ?? '').trim().replace(/\/+$/, '').replace(/\/rest\/v1$/, '')
+  let key = (env.SUPABASE_ANON_KEY ?? '').trim()
+  const role = (() => {
+    try {
+      return JSON.parse(Buffer.from(key.split('.')[1], 'base64url').toString()).role
+    } catch {
+      return null
+    }
+  })()
+  if (key.startsWith('sb_secret_') || role === 'service_role') {
+    console.error(
+      '\n[supabase] SUPABASE_ANON_KEY is a SECRET key. It was NOT added to the site.\n' +
+        '           Use the publishable key (sb_publishable_…) or the legacy "anon" key instead,\n' +
+        '           and rotate the secret key in Supabase → Project Settings → API Keys.\n',
+    )
+    key = ''
+  }
+  return { url, key }
+}
+
+export default defineConfig(({ mode }) => {
+  const sb = supabaseEnv(mode)
+  return {
+  plugins: [
+    react(),
+    profileMeta(),
+    {
+      name: 'supabase-env',
+      transformIndexHtml: (html) => html.replaceAll('%SUPABASE_URL%', sb.url).replaceAll('%SUPABASE_ANON_KEY%', sb.key),
+    },
+  ],
+  define: {
+    'import.meta.env.SUPABASE_URL': JSON.stringify(sb.url),
+    'import.meta.env.SUPABASE_ANON_KEY': JSON.stringify(sb.key),
+  },
   css: { postcss: { plugins: [motionAttr] } },
   // Bind to IPv4 loopback explicitly. "localhost" can resolve to IPv6 (::1),
   // which is unreachable on some Windows setups (VPN/proxy software).
@@ -76,4 +118,5 @@ export default defineConfig({
     // case on Windows (c:\ vs C:\), which makes the bundler load React twice.
     alias: [{ find: /^@\//, replacement: '/src/' }],
   },
+  }
 })

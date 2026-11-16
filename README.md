@@ -25,8 +25,8 @@ All personal content (profile, hero, about, skills, projects, experience, contac
 3. Copy **Project URL** and the **anon / publishable key** (Project Settings → API) into `.env.local`, and into your host's environment variables:
 
    ```
-   VITE_SUPABASE_URL=https://xxxx.supabase.co
-   VITE_SUPABASE_ANON_KEY=...
+   SUPABASE_URL=https://xxxx.supabase.co
+   SUPABASE_ANON_KEY=...
    ```
 
    Both values are public by design; row-level security is what protects writes. Restart `npm run dev` after changing them.
