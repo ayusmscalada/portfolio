@@ -373,3 +373,107 @@ em {
     translate: none;
   }
 }
+
+/* ---- Backdrop ---------------------------------------------------------------
+   Four soft colour fields that slowly drift, stretch and turn behind the
+   page: peach, sky, lilac and honey on the light theme; sky, indigo, violet
+   and teal glows on the dark theme. Pre-softened radial gradients animated
+   with transform only (no blur filter), so it stays on the compositor. */
+:root,
+[data-theme='dark'] {
+  --blob-1: rgb(56 140 255 / 0.3);
+  --blob-2: rgb(139 92 246 / 0.28);
+  --blob-3: rgb(20 184 166 / 0.2);
+  --blob-4: rgb(99 102 241 / 0.26);
+}
+
+[data-theme='light'] {
+  --blob-1: rgb(255 170 120 / 0.55);
+  --blob-2: rgb(110 175 255 / 0.5);
+  --blob-3: rgb(185 155 255 / 0.42);
+  --blob-4: rgb(255 205 110 / 0.45);
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.backdrop span {
+  position: absolute;
+  width: 62vmax;
+  height: 62vmax;
+  border-radius: 50%;
+  will-change: transform;
+  animation: 28s ease-in-out infinite alternate both;
+}
+
+.backdrop span:nth-child(1) {
+  left: -18vmax;
+  top: -20vmax;
+  background: radial-gradient(circle, var(--blob-1), transparent 66%);
+  animation-name: drift-a;
+}
+
+.backdrop span:nth-child(2) {
+  right: -20vmax;
+  top: 4vh;
+  background: radial-gradient(circle, var(--blob-2), transparent 66%);
+  animation-name: drift-b;
+  animation-duration: 34s;
+}
+
+.backdrop span:nth-child(3) {
+  left: 18vw;
+  bottom: -30vmax;
+  background: radial-gradient(circle, var(--blob-3), transparent 66%);
+  animation-name: drift-c;
+  animation-duration: 40s;
+}
+
+.backdrop span:nth-child(4) {
+  right: 8vw;
+  bottom: -12vmax;
+  width: 44vmax;
+  height: 44vmax;
+  background: radial-gradient(circle, var(--blob-4), transparent 66%);
+  animation-name: drift-d;
+  animation-duration: 31s;
+}
+
+/* Each field wanders and changes shape (uneven scale + rotation reads as a
+   soft, flexible blob rather than a circle sliding around). */
+@keyframes drift-a {
+  0% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1, 1); }
+  50% { transform: translate3d(22vw, 16vh, 0) rotate(40deg) scale(1.25, 0.85); }
+  100% { transform: translate3d(8vw, 34vh, 0) rotate(90deg) scale(0.9, 1.15); }
+}
+
+@keyframes drift-b {
+  0% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1, 1); }
+  50% { transform: translate3d(-24vw, 22vh, 0) rotate(-35deg) scale(0.85, 1.25); }
+  100% { transform: translate3d(-10vw, -8vh, 0) rotate(-80deg) scale(1.2, 0.9); }
+}
+
+@keyframes drift-c {
+  0% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1, 1); }
+  50% { transform: translate3d(26vw, -24vh, 0) rotate(50deg) scale(1.2, 0.9); }
+  100% { transform: translate3d(-12vw, -12vh, 0) rotate(110deg) scale(0.9, 1.2); }
+}
+
+@keyframes drift-d {
+  0% { transform: translate3d(0, 0, 0) scale(1, 1); }
+  50% { transform: translate3d(-30vw, -20vh, 0) scale(1.3, 0.8); }
+  100% { transform: translate3d(-6vw, -36vh, 0) scale(0.85, 1.2); }
+}
+
+/* Plain cream with no movement for visitors who prefer reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  .backdrop span {
+    animation: none;
+  }
+}

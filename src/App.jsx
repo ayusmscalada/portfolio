@@ -15,6 +15,13 @@ export default function App() {
       <a href="#main" className="skip-link">
         Skip to content
       </a>
+      {/* Soft colour fields drifting behind the page (light theme, see base.css). */}
+      <div className="backdrop" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+        <span />
+      </div>
       <Hud />
 
       <main id="main" className="main">
