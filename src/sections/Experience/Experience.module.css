@@ -88,3 +88,31 @@
     gap: 10px;
   }
 }
+
+/* Each role slides in from the left; a short accent bar marks the hovered one. */
+.item {
+  position: relative;
+}
+
+.item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: -1px;
+  width: 0;
+  height: 2px;
+  background: var(--accent-fill);
+  transition: width 0.4s var(--ease-out);
+}
+
+.item:hover::before {
+  width: 64px;
+}
+
+.list :global(.reveal) {
+  transform: translate3d(-16px, 0, 0);
+}
+
+.list :global(.reveal[data-in='true']) {
+  transform: none;
+}

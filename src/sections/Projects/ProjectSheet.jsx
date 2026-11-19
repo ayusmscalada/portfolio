@@ -46,8 +46,8 @@ export function ProjectSheet({ project, list, recordNo, onNavigate, onClose }) {
       {p && (
         <>
           <header className={s.top}>
-            <span className={s.crumb}>
-              <span className={s.accent}>SELECT</span> * <span className={s.accent}>WHERE</span> id = '{p.id}'
+            <span className={s.crumb} title={p.title}>
+              {p.title}
             </span>
             <div className={s.nav}>
               <button type="button" className={s.navBtn} onClick={() => step(-1)} aria-label="Previous project">

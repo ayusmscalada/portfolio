@@ -169,3 +169,22 @@
   --grid-line: rgb(16 73 110 / 0.06);
   --grad-text: linear-gradient(100deg, #0c4a6e, #0369a1 35%, #6d28d9 70%, #0369a1);
 }
+
+/* ---- Light theme: warm paper, dark ink, a deep blue accent --------------
+   Cream background with white cards; text and accent pass WCAG AA. */
+[data-theme='light'] {
+  --bg: #f7f3ec;
+  --bg-elev: #fffdf9;
+  --surface: #efe8dc;
+  --surface-2: #e5dccc;
+  --text: #221c15;
+  --text-muted: #574c40;
+  --text-dim: #73685b;
+  --line: rgb(70 50 25 / 0.13);
+  --line-strong: rgb(70 50 25 / 0.27);
+  --accent-fill: #1d5ed8;
+  --accent: #1a52bd;
+  --on-accent: #ffffff;
+  --ok: #15803d;
+  --shadow: 0 18px 40px -22px rgb(70 45 15 / 0.35);
+}
