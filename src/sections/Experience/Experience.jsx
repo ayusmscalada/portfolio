@@ -1,49 +1,34 @@
 import { useContent } from '@/content/ContentContext.jsx'
 import { SectionHead } from '@/components/SectionHead/SectionHead.jsx'
 import { Reveal } from '@/components/motion/Reveal.jsx'
-import { shortSha } from '@/lib/hash.js'
 import s from './Experience.module.css'
 
 export function Experience() {
   const { experience } = useContent()
-  const { roles } = experience
 
   return (
     <section id="experience" className={s.section} aria-labelledby="experience-title">
       <div className="wrap">
-        <SectionHead id="experience" badge="Journey" title={experience.title} lede={experience.lede} />
+        <SectionHead id="experience" badge="Experience" title={experience.title} lede={experience.lede} />
 
-        <div className={s.timeline}>
-          <span className={s.track} aria-hidden="true">
-            <span className={s.fill} />
-          </span>
-          <ol className={s.list}>
-          {roles.map((r, i) => (
-            <li key={`${r.company}-${r.role}-${i}`} className={s.item} data-current={r.end == null} data-stage={`role-${i}`}>
-              <span className={s.node} aria-hidden="true" />
-              <Reveal className={s.card} delay={60} data-spot>
-                <div className={s.meta}>
-                  <time className={s.date}>
-                    {r.start} — {r.end ?? 'Present'}
-                  </time>
-                  {r.end == null && (
-                    <span className={s.now}>
-                      Now
-                    </span>
-                  )}
-                  {r.location && <span className={s.loc}>{r.location}</span>}
-                  <code className={s.sha} title="commit">
-                    {shortSha(`${r.company}/${r.role}/${r.start}`)}
-                  </code>
-                </div>
+        <ol className={s.list}>
+          {experience.roles.map((r, i) => (
+            <Reveal as="li" key={`${r.company}-${r.role}-${i}`} className={s.item}>
+              <div className={s.when}>
+                <time>
+                  {r.start} — {r.end ?? 'Present'}
+                </time>
+                {r.location && <span>{r.location}</span>}
+              </div>
 
+              <div className={s.body}>
                 <h3 className={s.role}>
-                  {r.role} <span className={s.at}>@</span> <span className={s.company}>{r.company}</span>
+                  {r.role} <span>· {r.company}</span>
                 </h3>
                 {r.summary && <p className={s.summary}>{r.summary}</p>}
 
                 {r.highlights?.length > 0 && (
-                  <ul className={s.highlights} aria-label="Highlights">
+                  <ul className={s.highlights}>
                     {r.highlights.map((h) => (
                       <li key={h}>{h}</li>
                     ))}
@@ -57,11 +42,10 @@ export function Experience() {
                     ))}
                   </ul>
                 )}
-              </Reveal>
-            </li>
+              </div>
+            </Reveal>
           ))}
-          </ol>
-        </div>
+        </ol>
       </div>
     </section>
   )

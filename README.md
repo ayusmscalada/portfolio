@@ -1,6 +1,6 @@
 # Portfolio — Systems Atelier
 
-An immersive 3D portfolio: scroll to fly a camera through a three.js world (a crystal core, your emblem as a glass crest, a skills solar system, a gallery of project screens, a light-highway of roles and a portal), with content managed from a hidden admin page backed by Supabase. Built with React, Vite, three.js and CSS Modules.
+A simple, clear one-page portfolio with content managed from a hidden admin page backed by Supabase. Built with React, Vite and CSS Modules.
 
 ## Run locally
 
@@ -43,31 +43,15 @@ The site starts the Supabase request from `index.html`, in parallel with the Jav
 
 The supplied name, links, achievements, and experience remain template content; replace them before publishing. Atlas and Ledgerline previews in `public/images/` are generated interface concepts, not screenshots of live products. Replace them with your actual product captures when available.
 
-Projects with an `image` display it in the card and case study (use WebP, ~1200px wide); others get a generative cover. Status badges are automatic: LIVE when `links.live` is set, GITHUB when only `links.repo` is set, otherwise PRIVATE (override with `status`). The first three projects show by default; the rest sit behind "Show more", and technology chips filter the list.
+Projects with an `image` display it in the card and case study (use WebP, ~1200px wide); others get a generative cover. Status badges are automatic: LIVE when `links.live` is set, GITHUB when only `links.repo` is set, otherwise PRIVATE (override with `status`).
 
 ## Design and interaction
 
-The whole site is one 3D world (three.js, `src/world/`) that you fly through as you scroll. Each section marks its camera stops with `data-stage`, and the camera glides along a spline between them. It pauses at each stop, sways with the pointer, and widens its field of view (with star streaks) when you scroll fast.
+A single page with plain sections: Hero (your logo emblem), About, Skills (one card per area), Projects (a card grid; each card opens a case study), Experience and Contact. Shared tokens are in `src/styles/tokens.css`, the shared `.card` style is in `src/styles/base.css`, and text in `*asterisks*` is shown in the accent colour.
 
-| Stop | What you see |
-| --- | --- |
-| Hero (`core.js`) | A crystal core with a burning heart, a particle shell that parts around the pointer and ripples on click, a wire cage and orbit rings with satellites |
-| About (`crest.js`) | Your emblem as a 3D glass crest with neon edges, a glowing monogram and orbiting light trails |
-| Skills (`system.js`) | A solar system, one planet per skill card. While you scroll, it turns each planet to the front; the planet grows and shows its core skills as moons |
-| Projects (`gallery.js`) | Floating screens showing each project's image (or a generated cover). The section pins, and the camera visits each screen |
-| Journey (`journey.js`) | A hexagonal gate per role along a light-highway; the current role pulses |
-| Contact (`portal.js`) | A swirling portal pulling particles in |
-| Throughout (`space.js`) | Stars, nebulae and warp streaks |
-
-Skills and Projects use the pinned `Reel` component (`src/components/Reel/`): one panel that swaps content per stop.
-
-Content-driven parts (planets, screens, gates, monogram) rebuild when content changes, including live in the admin preview. The light theme switches the world to a "blueprint" look. Shared tokens are in `src/styles/tokens.css`, and text in `*asterisks*` gets the animated gradient.
-
-Ctrl/Cmd+K or `/` opens the command menu (also the mobile menu). Case studies support ←/→ and Escape. The nav's pause button freezes all motion; the camera then jumps between stops.
+Ctrl/Cmd+K or `/` opens the command menu (also the mobile menu). Case studies support ←/→ and Escape.
 
 ## Performance
 
-- three.js and the scene are a separate chunk (~145 KB gzip). It is fetched only after the page has loaded, painted and gone idle, so first paint is unchanged; a CSS nebula stands in until then, or if WebGL is unavailable.
-- **Phones and touch devices:** no bloom, fewer particles, and a lower pixel ratio.
-- **Desktop:** half-resolution bloom.
-- The render loop stops while the tab is hidden; with motion paused, it renders only when you scroll.
+- No 3D or canvas libraries: the public page is one small bundle (~91 KB gzip JS) plus CSS.
+- Sections fade in with a short CSS transition; the OS "reduce motion" setting turns it off.

@@ -1,67 +1,69 @@
 import { useContent } from '@/content/ContentContext.jsx'
 import { SectionHead } from '@/components/SectionHead/SectionHead.jsx'
 import { Reveal } from '@/components/motion/Reveal.jsx'
-import { Counter } from '@/components/motion/Counter.jsx'
 import { Rich } from '@/lib/rich.jsx'
 import s from './About.module.css'
 
+const statValue = (st) => `${st.prefix ?? ''}${st.decimals ? Number(st.value).toFixed(st.decimals) : st.value}${st.suffix ?? ''}`
+
 export function About() {
-  const { about, profile } = useContent()
+  const { about } = useContent()
   return (
-    <section id="about" className={s.section} aria-labelledby="about-title" data-stage="about">
+    <section id="about" className={s.section} aria-labelledby="about-title">
       <div className="wrap">
+        <SectionHead id="about" badge="About" title={about.title} />
+
         <div className={s.grid}>
-          {/* The 3D crest from the world floats in this column. */}
-          <div className={s.visual} aria-hidden="true" />
-
-          <div className={s.copy}>
-            <SectionHead id="about" badge="About me" title={about.title} align="start" size="sm" />
-            <Reveal as="p" className={s.statement}>
+          <Reveal className={s.copy}>
+            <p className={s.statement}>
               <Rich text={about.statement} />
-            </Reveal>
+            </p>
             {about.paragraphs.map((p, i) => (
-              <Reveal as="p" key={i} className={s.para} delay={80 + i * 80}>
+              <p key={i}>
                 <Rich text={p} />
-              </Reveal>
-            ))}
-
-            <Reveal as="aside" className={s.now} delay={240} aria-label="Currently" data-spot>
-              <p className={s.nowHead}>
-                Currently
-                <span className={s.nowAvail}>{profile.availability.label}</span>
               </p>
-              <dl>
-                {about.now.map((row) => (
-                  <div key={row.label}>
-                    <dt>{row.label}</dt>
-                    <dd>{row.value}</dd>
+            ))}
+          </Reveal>
+
+          <Reveal className={s.side} delay={100}>
+            {about.stats?.length > 0 && (
+              <dl className={s.stats}>
+                {about.stats.map((st) => (
+                  <div key={st.label} className={`card ${s.stat}`}>
+                    <dd>{statValue(st)}</dd>
+                    <dt>{st.label}</dt>
                   </div>
                 ))}
               </dl>
-            </Reveal>
-          </div>
+            )}
+
+            {about.now?.length > 0 && (
+              <div className={`card ${s.now}`}>
+                <h3>Currently</h3>
+                <dl>
+                  {about.now.map((row) => (
+                    <div key={row.label}>
+                      <dt>{row.label}</dt>
+                      <dd>{row.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            )}
+          </Reveal>
         </div>
 
-        <dl className={s.stats}>
-          {about.stats.map((stat, i) => (
-            <Reveal key={stat.label} className={s.stat} delay={i * 90} data-spot>
-              <dd>
-                <Counter value={stat.value} decimals={stat.decimals} suffix={stat.suffix} prefix={stat.prefix} />
-              </dd>
-              <dt>{stat.label}</dt>
-            </Reveal>
-          ))}
-        </dl>
-
-        <ol className={s.principles} aria-label="Operating principles">
-          {about.principles.map((p, i) => (
-            <Reveal as="li" key={p.title} className={s.principle} delay={i * 90} data-spot>
-              <span className={s.pIndex}>0{i + 1}</span>
-              <h3>{p.title}</h3>
-              <p>{p.body}</p>
-            </Reveal>
-          ))}
-        </ol>
+        {about.principles?.length > 0 && (
+          <ol className={s.principles} aria-label="How I work">
+            {about.principles.map((p, i) => (
+              <Reveal as="li" key={p.title} className={s.principle} delay={i * 60}>
+                <span>{String(i + 1).padStart(2, '0')}</span>
+                <h3>{p.title}</h3>
+                <p>{p.body}</p>
+              </Reveal>
+            ))}
+          </ol>
+        )}
       </div>
     </section>
   )
