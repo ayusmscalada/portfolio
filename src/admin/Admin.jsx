@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import bundled from '@/data/content.json'
 import { CONTENT_CHANNEL, DRAFT_MESSAGE } from '@/content/ContentContext.jsx'
-import { SB_READY, checkAdmin, hasSession, loadContent, saveContent, sessionEmail, signIn, signOut } from './api.js'
+import { SB_READY, checkAdmin, cleanupImages, hasSession, loadContent, saveContent, sessionEmail, signIn, signOut } from './api.js'
 import { EditorContext, Icon, setIn, useEditor } from './fields.jsx'
 import { AboutForm, ContactForm, ExperienceForm, HeroForm, ProfileForm, ProjectsForm, SkillsForm } from './forms.jsx'
 import s from './Admin.module.css'
@@ -248,31 +248,66 @@ export function Admin() {
   const set = useCallback((path, value) => setDraft((d) => setIn(d, path, value)), [])
   const replace = useCallback((next) => setDraft(next), [])
 
-  const save = useCallback(async () => {
-    if (!draft || status === 'saving') return
-    setStatus('saving')
+  const broadcast = (content) => {
     try {
-      await saveContent(draft)
-      setSaved(draft)
-      setNotice('')
-      setStatus('idle')
-      try {
-        const bc = new BroadcastChannel(CONTENT_CHANNEL)
-        bc.postMessage(draft)
-        bc.close()
-      } catch {
-        /* ignore */
-      }
-      notify('Saved to Supabase. The live site shows it on the next page load.')
-    } catch (err) {
-      setStatus('idle')
+      const bc = new BroadcastChannel(CONTENT_CHANNEL)
+      bc.postMessage(content)
+      bc.close()
+    } catch {
+      /* ignore */
+    }
+  }
+  const onError = useCallback(
+    (err) => {
       if (err.status === 401) {
         signOut()
         setAuth(null)
       }
       notify(err.message, 'error')
+    },
+    [notify],
+  )
+
+  const save = useCallback(async () => {
+    if (!draft || status === 'saving') return
+    setStatus('saving')
+    const previous = saved
+    try {
+      await saveContent(draft)
+      setSaved(draft)
+      setNotice('')
+      setStatus('idle')
+      broadcast(draft)
+      // Images removed or replaced in the editor are deleted from Storage too.
+      let removed = 0
+      try {
+        removed = await cleanupImages(previous, draft)
+      } catch {
+        /* the content is saved; a leftover image does no harm */
+      }
+      notify(`Saved to Supabase${removed ? ` and deleted ${removed} unused image${removed > 1 ? 's' : ''}` : ''}. The live site shows it on the next page load.`)
+    } catch (err) {
+      setStatus('idle')
+      onError(err)
     }
-  }, [draft, status, notify])
+  }, [draft, saved, status, notify, onError])
+
+  /**
+   * Publishes one field right away, without publishing other unsaved edits
+   * (e.g. clearing the résumé link when its file is deleted). The draft gets
+   * the same change.
+   */
+  const publishField = useCallback(
+    async (path, value) => {
+      setDraft((d) => setIn(d, path, value))
+      if (!saved) return
+      const next = setIn(saved, path, value)
+      await saveContent(next)
+      setSaved(next)
+      broadcast(next)
+    },
+    [saved],
+  )
 
   // Ctrl/⌘ + S saves; warn before leaving with unsaved edits.
   useEffect(() => {
@@ -293,7 +328,7 @@ export function Admin() {
     }
   }, [dirty, save])
 
-  const ctx = useMemo(() => ({ draft, set, replace, notify }), [draft, set, replace, notify])
+  const ctx = useMemo(() => ({ draft, saved, set, replace, notify, publishField, onError }), [draft, saved, set, replace, notify, publishField, onError])
 
   if (!SB_READY) return <NotConfigured />
   if (checking) return <main className={s.loginPage} aria-busy="true" />

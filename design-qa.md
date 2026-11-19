@@ -1,4 +1,4 @@
-﻿# Design QA — Particle wave
+﻿# Design QA - Particle wave
 
 final result: passed
 

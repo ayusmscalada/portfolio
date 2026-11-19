@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useId, useRef, useState } from 'react'
-import { uploadImage } from './api.js'
+import { deleteFiles, listFiles, uploadImage, uploadResume } from './api.js'
 import s from './Admin.module.css'
 
 /* ---- editor state ------------------------------------------------------ */
@@ -39,6 +39,8 @@ export const Icon = {
   desktop: svg(<><rect x="3" y="4" width="18" height="12" rx="2" /><path d="M8 20h8M12 16v4" /></>),
   mobile: svg(<><rect x="7" y="2" width="10" height="20" rx="2" /><path d="M11 18h2" /></>),
   eye: svg(<><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" /><circle cx="12" cy="12" r="3" /></>),
+  eyeOff: svg(<><path d="M10.6 5.1A10 10 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-2.7 3.6M6.6 6.6C3.7 8.4 2 12 2 12s3.5 7 10 7a9.7 9.7 0 0 0 5.4-1.6" /><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2M3 3l18 18" /></>),
+  file: svg(<><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z" /><path d="M14 3v5h5M9 13h6M9 17h4" /></>),
 }
 
 /* ---- layout ------------------------------------------------------------ */
@@ -289,7 +291,7 @@ const newKey = () => nextKey++
  * Collapsible, reorderable list. `children(base, index)` renders the fields
  * of one item, where `base` is the item's path.
  */
-export function List({ path, label, hint, newItem, itemTitle, addLabel = 'Add item', children, defaultOpen = false }) {
+export function List({ path, label, hint, newItem, itemTitle, addLabel = 'Add item', children, defaultOpen = false, hideable = false }) {
   const [value, setValue] = useField(path)
   const items = Array.isArray(value) ? value : []
   const [keys, setKeys] = useState(() => items.map(newKey))
@@ -314,6 +316,7 @@ export function List({ path, label, hint, newItem, itemTitle, addLabel = 'Add it
     ;[ks[i], ks[j]] = [ks[j], ks[i]]
     apply(it, ks)
   }
+  const setHidden = (i, hidden) => setValue(items.map((it, n) => (n === i ? { ...it, hidden } : it)))
   const remove = (i) => apply(items.filter((_, n) => n !== i), liveKeys.filter((_, n) => n !== i))
   const duplicate = (i) => {
     const k = newKey()
@@ -343,15 +346,29 @@ export function List({ path, label, hint, newItem, itemTitle, addLabel = 'Add it
       {items.map((item, i) => {
         const k = liveKeys[i]
         const isOpen = open.has(k)
+        const hidden = hideable && !!item?.hidden
         return (
-          <div key={k} className={s.item} data-open={isOpen}>
+          <div key={k} className={s.item} data-open={isOpen} data-hidden={hidden}>
             <div className={s.itemBar}>
               <button type="button" className={s.itemToggle} onClick={() => toggle(k)} aria-expanded={isOpen}>
                 <span className={s.itemNo}>{String(i + 1).padStart(2, '0')}</span>
                 <span className={s.itemTitle}>{(itemTitle ? itemTitle(item, i) : '') || 'Untitled'}</span>
+                {hidden && <span className={s.hiddenTag}>Hidden</span>}
                 <span className={s.caret}>{Icon.down}</span>
               </button>
               <div className={s.itemTools}>
+                {hideable && (
+                  <button
+                    type="button"
+                    className={hidden ? s.toolOff : s.toolOn}
+                    onClick={() => setHidden(i, !hidden)}
+                    aria-pressed={!hidden}
+                    aria-label={hidden ? 'Hidden from visitors. Click to show' : 'Visible to visitors. Click to hide'}
+                    title={hidden ? 'Hidden from visitors. Click to show' : 'Visible to visitors. Click to hide'}
+                  >
+                    {hidden ? Icon.eyeOff : Icon.eye}
+                  </button>
+                )}
                 <button type="button" onClick={() => move(i, -1)} disabled={i === 0} aria-label="Move up" title="Move up">
                   {Icon.up}
                 </button>
@@ -393,5 +410,137 @@ function ConfirmDelete({ onConfirm }) {
     >
       {armed ? 'Delete?' : Icon.trash}
     </button>
+  )
+}
+
+/* ---- résumé files -------------------------------------------------------- */
+
+const fileSize = (n) => (n >= 1e6 ? `${(n / 1e6).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1e3))} KB`)
+const fileDate = (iso) => (iso ? new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '')
+
+/**
+ * Résumés stored in Supabase Storage (resumes/): upload, choose the one the
+ * site links to (profile.resumeUrl, published with Save), open, and delete.
+ * Deleting removes the file from Supabase; if the live site links to it, the
+ * link is removed from the live site at once so it never points at nothing.
+ */
+export function ResumeManager() {
+  const { draft, saved, set, notify, publishField, onError } = useEditor()
+  const [files, setFiles] = useState(null)
+  const [busy, setBusy] = useState(false)
+  const [loadError, setLoadError] = useState('')
+  const fileRef = useRef(null)
+  const current = draft.profile?.resumeUrl ?? ''
+  const live = saved?.profile?.resumeUrl ?? ''
+  const choose = (url) => set(['profile', 'resumeUrl'], url)
+
+  useEffect(() => {
+    let off = false
+    listFiles('resumes')
+      .then((list) => !off && setFiles(list))
+      .catch((err) => {
+        if (off) return
+        setFiles([])
+        setLoadError(err.message)
+      })
+    return () => {
+      off = true
+    }
+  }, [])
+
+  const onFile = async (file) => {
+    if (!file) return
+    setBusy(true)
+    try {
+      const f = await uploadResume(file)
+      setFiles((list) => [f, ...(list ?? [])])
+      if (!current) {
+        choose(f.url)
+        notify('Résumé uploaded and selected. Save changes to show it on the site.')
+      } else {
+        notify('Résumé uploaded. Select it, then save, to show it on the site.')
+      }
+    } catch (err) {
+      onError(err)
+    } finally {
+      setBusy(false)
+      if (fileRef.current) fileRef.current.value = ''
+    }
+  }
+
+  const remove = async (f) => {
+    try {
+      await deleteFiles([f.path])
+      setFiles((list) => list.filter((x) => x.path !== f.path))
+      if (live === f.url) {
+        await publishField(['profile', 'resumeUrl'], '')
+        notify('Résumé deleted from Supabase, and the résumé button was removed from the live site.')
+      } else {
+        if (current === f.url) choose('')
+        notify('Résumé deleted from Supabase.')
+      }
+    } catch (err) {
+      onError(err)
+    }
+  }
+
+  const external = current && !files?.some((f) => f.url === current)
+
+  return (
+    <div className={s.files}>
+      <div className={s.inline}>
+        <button type="button" className={s.btn} disabled={busy} onClick={() => fileRef.current?.click()}>
+          {Icon.upload} {busy ? 'Uploading…' : 'Upload résumé'}
+        </button>
+        <span className={s.hint}>PDF or Word, up to 10 MB.</span>
+        <input ref={fileRef} type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden onChange={(e) => onFile(e.target.files?.[0])} />
+      </div>
+
+      {loadError && <p className={s.error}>Could not list résumés: {loadError}</p>}
+
+      <ul className={s.fileList} aria-busy={files == null}>
+        {files == null && <li className={s.fileEmpty}>Loading…</li>}
+        {files?.length === 0 && !loadError && <li className={s.fileEmpty}>No résumés uploaded yet.</li>}
+        {files?.map((f) => (
+          <li key={f.path} className={s.fileRow} data-selected={current === f.url}>
+            <label className={s.filePick}>
+              <input type="radio" name="resume" checked={current === f.url} onChange={() => choose(f.url)} />
+              <span className={s.fileIcon}>{Icon.file}</span>
+              <span className={s.fileMeta}>
+                <strong>{f.name}</strong>
+                <span>
+                  {fileSize(f.size)} · {fileDate(f.created)}
+                </span>
+              </span>
+            </label>
+            {live === f.url && <span className={s.badgeLive}>On site</span>}
+            {current === f.url && live !== f.url && <span className={s.badgeDraft}>Selected · save to publish</span>}
+            <div className={s.itemTools}>
+              <a href={f.url} target="_blank" rel="noopener" title="Open" aria-label={`Open ${f.name}`}>
+                {Icon.external}
+              </a>
+              <ConfirmDelete onConfirm={() => remove(f)} />
+            </div>
+          </li>
+        ))}
+        {files != null && (
+          <li className={s.fileRow} data-selected={!current}>
+            <label className={s.filePick}>
+              <input type="radio" name="resume" checked={!current} onChange={() => choose('')} />
+              <span className={s.fileMeta}>
+                <strong>No résumé</strong>
+                <span>Hide the résumé button on the site</span>
+              </span>
+            </label>
+          </li>
+        )}
+      </ul>
+
+      {external && (
+        <p className={s.hint}>
+          The site currently links to <code>{current}</code>, which is not a file in this list. Pick a file above or “No résumé” to replace it.
+        </p>
+      )}
+    </div>
   )
 }

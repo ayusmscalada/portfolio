@@ -197,7 +197,7 @@ export function CommandPalette() {
 
       {!results.length && (
         <p className={s.empty}>
-          404 — no command matches “{query}”. Try <code>projects</code> or <code>email</code>.
+          404 - no command matches “{query}”. Try <code>projects</code> or <code>email</code>.
         </p>
       )}
 

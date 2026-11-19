@@ -27,6 +27,8 @@ export function resolveContent(raw) {
     return v
   }
   const c = fill(raw)
+  // Projects switched off in the admin are not shown to visitors.
+  c.projects = (c.projects ?? []).filter((p) => !p.hidden)
   c.about.stats = (c.about.stats ?? []).map((st) => ({ ...st, value: Number(st.value) || 0 }))
   const first = c.profile.firstName ?? ''
   const last = c.profile.lastName ?? ''
@@ -70,7 +72,7 @@ export function ContentProvider({ initial, children }) {
   }, [raw])
 
   useEffect(() => {
-    document.title = `${content.fullName} — ${content.profile.role}`
+    document.title = `${content.fullName} - ${content.profile.role}`
   }, [content.fullName, content.profile.role])
 
   return <ContentContext.Provider value={content}>{children}</ContentContext.Provider>

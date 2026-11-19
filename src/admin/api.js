@@ -144,5 +144,98 @@ export async function uploadImage(file) {
     headers: await authed({ 'content-type': type, 'cache-control': 'max-age=31536000' }),
     body: blob,
   })
-  return publicUrl(path)
+  const url = publicUrl(path)
+  rememberUpload(url)
+  return url
+}
+
+/* ---- files in the bucket ------------------------------------------------ */
+
+const PUBLIC_PREFIX = publicUrl('')
+
+/** Bucket path of a URL that points into our bucket, else null. */
+export const pathOf = (url) => (typeof url === 'string' && url.startsWith(PUBLIC_PREFIX) ? decodeURIComponent(url.slice(PUBLIC_PREFIX.length)) : null)
+
+/** Files in a folder of the bucket, newest first: [{ path, name, size, type, created, url }]. */
+export async function listFiles(folder) {
+  const rows = await request(`${SB_URL}/storage/v1/object/list/${BUCKET}`, {
+    method: 'POST',
+    headers: await authed({ 'content-type': 'application/json' }),
+    body: JSON.stringify({ prefix: folder, limit: 200, sortBy: { column: 'created_at', order: 'desc' } }),
+  })
+  return (rows ?? [])
+    .filter((f) => f.id && !f.name.startsWith('.'))
+    .map((f) => {
+      const path = `${folder}/${f.name}`
+      return { path, name: displayName(f.name), size: f.metadata?.size ?? 0, type: f.metadata?.mimetype ?? '', created: f.created_at, url: publicUrl(path) }
+    })
+}
+
+/** Deletes files from the bucket. Throws unless every one was removed. */
+export async function deleteFiles(paths) {
+  if (!paths.length) return
+  const gone = await request(`${SB_URL}/storage/v1/object/${BUCKET}`, {
+    method: 'DELETE',
+    headers: await authed({ 'content-type': 'application/json' }),
+    body: JSON.stringify({ prefixes: paths }),
+  })
+  if ((gone?.length ?? 0) < paths.length) throw new Error('Supabase did not delete the file (check the storage policies in supabase/setup.sql).')
+}
+
+const RESUME_TYPES = {
+  'application/pdf': 'pdf',
+  'application/msword': 'doc',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+}
+
+// Stored as "<timestamp>__<file-name>.<ext>" so names stay readable and unique.
+const displayName = (stored) => stored.replace(/^[a-z0-9]+__/, '')
+
+/** Uploads a résumé (PDF or Word, ≤10 MB) to resumes/ and returns its file entry. */
+export async function uploadResume(file) {
+  const ext = RESUME_TYPES[file.type] ?? (/\.(pdf|docx?)$/i.exec(file.name)?.[1].toLowerCase())
+  if (!ext) throw new Error('Use a PDF or Word (.doc, .docx) file')
+  if (file.size > 10_000_000) throw new Error('File is larger than 10 MB')
+  const type = Object.keys(RESUME_TYPES).find((t) => RESUME_TYPES[t] === ext)
+  const base = file.name.replace(/\.[^.]+$/, '').replace(/[^A-Za-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'resume'
+  const path = `resumes/${Date.now().toString(36)}__${base}.${ext}`
+  await request(`${SB_URL}/storage/v1/object/${BUCKET}/${path}`, {
+    method: 'POST',
+    headers: await authed({ 'content-type': type, 'cache-control': 'max-age=60' }),
+    body: file,
+  })
+  return { path, name: `${base}.${ext}`, size: file.size, type, created: new Date().toISOString(), url: publicUrl(path) }
+}
+
+/* Project images uploaded in this tab: if they end up unused they are deleted on save. */
+const uploadedImages = new Set()
+export const rememberUpload = (url) => uploadedImages.add(url)
+
+/** Every bucket path under projects/ referenced anywhere in the content. */
+function imagePaths(content, out = new Set()) {
+  if (typeof content === 'string') {
+    const p = pathOf(content)
+    if (p?.startsWith('projects/')) out.add(p)
+  } else if (content && typeof content === 'object') {
+    for (const v of Object.values(content)) imagePaths(v, out)
+  }
+  return out
+}
+
+/**
+ * After a save: deletes project images that were in the previous content (or
+ * uploaded in this tab) but are no longer used. Returns how many were deleted.
+ */
+export async function cleanupImages(previous, next) {
+  const keep = imagePaths(next)
+  const candidates = imagePaths(previous)
+  for (const url of uploadedImages) {
+    const p = pathOf(url)
+    if (p) candidates.add(p)
+  }
+  const unused = [...candidates].filter((p) => !keep.has(p))
+  if (!unused.length) return 0
+  await deleteFiles(unused)
+  for (const url of [...uploadedImages]) if (unused.includes(pathOf(url))) uploadedImages.delete(url)
+  return unused.length
 }

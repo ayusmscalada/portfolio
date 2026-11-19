@@ -16,7 +16,7 @@ export function Experience() {
             <Reveal as="li" key={`${r.company}-${r.role}-${i}`} className={s.item}>
               <div className={s.when}>
                 <time>
-                  {r.start} — {r.end ?? 'Present'}
+                  {r.start} - {r.end ?? 'Present'}
                 </time>
                 {r.location && <span>{r.location}</span>}
               </div>

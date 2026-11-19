@@ -15,6 +15,8 @@ export function Projects() {
   const [openId, setOpenId] = useState(null)
   const recordNo = (p) => pad(projects.indexOf(p) + 1)
 
+  if (!projects.length) return null // every project is hidden in the admin
+
   return (
     <section id="projects" className={s.section} aria-labelledby="projects-title">
       <div className="wrap">

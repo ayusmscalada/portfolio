@@ -13,7 +13,7 @@ export function Hero() {
       <div className={`wrap ${s.grid}`}>
         <div className={s.content}>
           <p className={s.hello}>
-            Hi, I’m {fullName} — <span>{profile.role}</span>
+            Hi, I’m {fullName} - <span>{profile.role}</span>
           </p>
           <h1 id="hero-title" className={s.title}>
             <Rich text={profile.headline} />
@@ -31,6 +31,11 @@ export function Hero() {
             <a className={s.secondary} href="#contact">
               Get in touch
             </a>
+            {profile.resumeUrl && (
+              <a className={s.secondary} href={profile.resumeUrl} target="_blank" rel="noopener">
+                Résumé
+              </a>
+            )}
           </div>
 
           {profile.socials?.length > 0 && (

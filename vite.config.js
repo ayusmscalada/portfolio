@@ -16,7 +16,7 @@ function profileMeta() {
     .replace(/>Y<\/text>/, `>${monogram.replace(/[<&>]/g, '')}</text>`)
     .replace(/font-size="22"/, `font-size="${monogram.length > 1 ? 16 : 22}"`)
   const values = {
-    title: `${name} — ${profile.role}`,
+    title: `${name} - ${profile.role}`,
     description: `${name} is a ${profile.role.toLowerCase()} based in ${profile.location}. ${profile.tagline.replace(/\*/g, '')}`,
     name,
     favicon: `data:image/svg+xml,${encodeURIComponent(favicon.trim())}`,

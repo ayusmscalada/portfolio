@@ -1,8 +1,8 @@
 import { useRef } from 'react'
-import { Group, ImageField, Lines, List, Num, Range, Row, Select, Tags, Text, Toggle, useEditor } from './fields.jsx'
+import { Group, ImageField, Lines, List, Num, Range, ResumeManager, Row, Select, Tags, Text, Toggle, useEditor } from './fields.jsx'
 import s from './Admin.module.css'
 
-const RICH = 'Wrap a word in *asterisks* to give it the gradient accent.'
+const RICH = 'Wrap a word in *asterisks* to show it in the accent colour.'
 const YEARS = 'Type {years} to insert years since your first year shipping, kept up to date automatically.'
 const slug = (t) => String(t).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 
@@ -182,7 +182,7 @@ export function ProjectsForm() {
         <Text path={['projectsIntro', 'title']} label="Title" hint={RICH} />
         <Text path={['projectsIntro', 'lede']} label="Intro" multiline rows={2} />
       </Group>
-      <Group title="Projects" hint="The first three show by default; the rest sit behind “Show more”. Use the arrows to reorder.">
+      <Group title="Projects" hint="Use the eye button to show or hide a project from visitors (hidden projects stay here). Use the arrows to reorder.">
         <List
           path={['projects']}
           newItem={() => ({
@@ -201,12 +201,15 @@ export function ProjectsForm() {
             ],
             links: { live: '', repo: '' },
             image: '',
+            hidden: true,
           })}
           addLabel="Add project"
+          hideable
           itemTitle={(p) => p.title && `${p.title}${p.year ? ` · ${p.year}` : ''}`}
         >
           {(base) => (
             <>
+              <Toggle path={[...base, 'hidden']} label="Show this project on the site" invert />
               <Row>
                 <Text path={[...base, 'title']} label="Name" />
                 <Num path={[...base, 'year']} label="Year" min={1990} max={2100} />
@@ -217,7 +220,7 @@ export function ProjectsForm() {
               </Row>
               <Text path={[...base, 'summary']} label="Summary" multiline rows={3} />
               <ImageField path={[...base, 'image']} label="Cover image" hint="Screenshots look best at 16:10. Uploads are resized and converted to WebP." />
-              <Tags path={[...base, 'stack']} label="Tech stack" hint="Tags used by two or more projects become filter chips." />
+              <Tags path={[...base, 'stack']} label="Tech stack" hint="The first six show on the card." />
               <Row>
                 <Text path={[...base, 'links', 'live']} label="Live URL" type="url" placeholder="https://…" />
                 <Text path={[...base, 'links', 'repo']} label="Source code URL" type="url" placeholder="https://github.com/…" />
@@ -311,9 +314,11 @@ export function ContactForm() {
     <>
       <Group title="Contact">
         <Text path={['profile', 'email']} label="Email" type="email" />
-        <Text path={['profile', 'resumeUrl']} label="Résumé URL" placeholder="/resume.pdf or https://…" hint="Leave empty to hide the résumé button." />
         <Text path={['contact', 'title']} label="Section title" hint={RICH} />
         <Text path={['contact', 'lede']} label="Intro" multiline rows={2} />
+      </Group>
+      <Group title="Résumé" hint="Upload résumés to Supabase and pick the one visitors can open. Your choice goes live when you save. Deleting a file removes it from Supabase.">
+        <ResumeManager />
       </Group>
       <Group title="Availability">
         <Toggle path={['profile', 'availability', 'open']} label="Open to new work" />

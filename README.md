@@ -1,4 +1,4 @@
-# Portfolio — Systems Atelier
+# Portfolio - Systems Atelier
 
 A simple, clear one-page portfolio with content managed from a hidden admin page backed by Supabase. Built with React, Vite and CSS Modules.
 
