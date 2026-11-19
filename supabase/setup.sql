@@ -46,7 +46,7 @@ create policy "admins see themselves" on public.portfolio_admins
   for select to authenticated using (user_id = (select auth.uid()));
 
 -- File bucket: public read, admin list/upload/replace/delete. 10 MB; images
--- (projects/) and résumés as PDF or Word (resumes/).
+-- (projects/) and resumes as PDF or Word (resumes/).
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('portfolio', 'portfolio', true, 10485760, array[
   'image/webp', 'image/png', 'image/jpeg', 'image/gif',

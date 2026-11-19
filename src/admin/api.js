@@ -191,7 +191,7 @@ const RESUME_TYPES = {
 // Stored as "<timestamp>__<file-name>.<ext>" so names stay readable and unique.
 const displayName = (stored) => stored.replace(/^[a-z0-9]+__/, '')
 
-/** Uploads a résumé (PDF or Word, ≤10 MB) to resumes/ and returns its file entry. */
+/** Uploads a resume (PDF or Word, ≤10 MB) to resumes/ and returns its file entry. */
 export async function uploadResume(file) {
   const ext = RESUME_TYPES[file.type] ?? (/\.(pdf|docx?)$/i.exec(file.name)?.[1].toLowerCase())
   if (!ext) throw new Error('Use a PDF or Word (.doc, .docx) file')

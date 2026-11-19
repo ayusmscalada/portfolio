@@ -47,53 +47,53 @@ export function Emblem({ variant = 'full', className = '', label }) {
     <svg viewBox="0 0 400 400" className={s.svg} role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : true}>
       <defs>
         <radialGradient id={id('disc')} cx="50%" cy="45%" r="60%">
-          <stop offset="0" stopColor="#0d2238" />
-          <stop offset="0.65" stopColor="#060f1c" />
-          <stop offset="1" stopColor="#02060c" />
+          <stop className={s.st1} offset="0" stopColor="#0d2238" />
+          <stop className={s.st2} offset="0.65" stopColor="#060f1c" />
+          <stop className={s.st3} offset="1" stopColor="#02060c" />
         </radialGradient>
         <radialGradient id={id('core')} cx="50%" cy="50%" r="50%">
-          <stop offset="0" stopColor="#38bdf8" stopOpacity="0.55" />
-          <stop offset="0.45" stopColor="#3b82f6" stopOpacity="0.18" />
-          <stop offset="1" stopColor="#3b82f6" stopOpacity="0" />
+          <stop className={s.st4} offset="0" stopColor="#38bdf8" stopOpacity="0.55" />
+          <stop className={s.st5} offset="0.45" stopColor="#3b82f6" stopOpacity="0.18" />
+          <stop className={s.st6} offset="1" stopColor="#3b82f6" stopOpacity="0" />
         </radialGradient>
         <linearGradient id={id('steel')} x1="0" y1="0" x2="0.3" y2="1">
-          <stop offset="0" stopColor="#dff3ff" />
-          <stop offset="0.35" stopColor="#7d9bb8" />
-          <stop offset="0.7" stopColor="#2a3f57" />
-          <stop offset="1" stopColor="#9fc3e0" />
+          <stop className={s.st7} offset="0" stopColor="#dff3ff" />
+          <stop className={s.st8} offset="0.35" stopColor="#7d9bb8" />
+          <stop className={s.st9} offset="0.7" stopColor="#2a3f57" />
+          <stop className={s.st10} offset="1" stopColor="#9fc3e0" />
         </linearGradient>
         <linearGradient id={id('plate')} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#13263b" />
-          <stop offset="0.5" stopColor="#0a1524" />
-          <stop offset="1" stopColor="#152c45" />
+          <stop className={s.st11} offset="0" stopColor="#13263b" />
+          <stop className={s.st12} offset="0.5" stopColor="#0a1524" />
+          <stop className={s.st13} offset="1" stopColor="#152c45" />
         </linearGradient>
         <linearGradient id={id('energy')} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#7dd3fc" />
-          <stop offset="0.5" stopColor="#38bdf8" />
-          <stop offset="1" stopColor="#a78bfa" />
+          <stop className={s.st14} offset="0" stopColor="#7dd3fc" />
+          <stop className={s.st15} offset="0.5" stopColor="#38bdf8" />
+          <stop className={s.st16} offset="1" stopColor="#a78bfa" />
         </linearGradient>
         <linearGradient id={id('letter')} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#ffffff" />
-          <stop offset="0.55" stopColor="#e3f4ff" />
-          <stop offset="1" stopColor="#9fd8ff" />
+          <stop className={s.st17} offset="0" stopColor="#ffffff" />
+          <stop className={s.st18} offset="0.55" stopColor="#e3f4ff" />
+          <stop className={s.st19} offset="1" stopColor="#9fd8ff" />
         </linearGradient>
         <linearGradient id={id('flare')} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="#38bdf8" stopOpacity="0" />
-          <stop offset="0.5" stopColor="#e0f2fe" stopOpacity="0.95" />
-          <stop offset="1" stopColor="#38bdf8" stopOpacity="0" />
+          <stop className={s.st20} offset="0" stopColor="#38bdf8" stopOpacity="0" />
+          <stop className={s.st21} offset="0.5" stopColor="#e0f2fe" stopOpacity="0.95" />
+          <stop className={s.st22} offset="1" stopColor="#38bdf8" stopOpacity="0" />
         </linearGradient>
         <path id={id("arc")} d="M38 200 A162 162 0 0 0 362 200" />
       </defs>
 
       <circle cx="200" cy="200" r="184" fill={`url(#${id('disc')})`} />
-      <circle cx="200" cy="200" r="184" fill="none" stroke="#38bdf8" strokeOpacity="0.55" strokeWidth="1.5" />
+      <circle className={s.ring} cx="200" cy="200" r="184" fill="none" stroke="#38bdf8" strokeOpacity="0.55" strokeWidth="1.5" />
 
       {full && (
         <>
           <circle className={s.orbitA} cx="200" cy="200" r="194" fill="none" stroke="#7dd3fc" strokeOpacity="0.45" strokeWidth="1" strokeDasharray="2 9" />
           <g className={s.orbitB}>
             <circle cx="200" cy="200" r="170" fill="none" stroke={`url(#${id('energy')})`} strokeWidth="1.6" strokeDasharray="120 410" strokeLinecap="round" />
-            <circle cx="370" cy="200" r="3" fill="#bae6fd" />
+            <circle className={s.sat} cx="370" cy="200" r="3" fill="#bae6fd" />
           </g>
           <circle className={s.core} cx="200" cy="200" r="160" fill={`url(#${id('core')})`} />
         </>
@@ -101,9 +101,9 @@ export function Emblem({ variant = 'full', className = '', label }) {
 
       <g className={s.crest} transform="translate(200 200) scale(0.86) translate(-200 -200)">
         <path d={CREST} fill={`url(#${id('plate')})`} stroke={`url(#${id('steel')})`} strokeWidth="5" strokeLinejoin="round" />
-        <path d={CREST} fill="none" stroke="#7dd3fc" strokeOpacity="0.35" strokeWidth="1.2" transform="translate(200 200) scale(0.84) translate(-200 -200)" />
+        <path className={s.inner} d={CREST} fill="none" stroke="#7dd3fc" strokeOpacity="0.35" strokeWidth="1.2" transform="translate(200 200) scale(0.84) translate(-200 -200)" />
         {FACETS.map((d) => (
-          <path key={d} d={d} fill="none" stroke="#9cc6e6" strokeOpacity="0.22" strokeWidth="1.2" />
+          <path key={d} className={s.facet} d={d} fill="none" stroke="#9cc6e6" strokeOpacity="0.22" strokeWidth="1.2" />
         ))}
         {full && (
           <>
@@ -116,10 +116,10 @@ export function Emblem({ variant = 'full', className = '', label }) {
       {full && (
         <g className={s.flare}>
           <rect x="30" y="198.5" width="340" height="3" rx="1.5" fill={`url(#${id('flare')})`} />
-          <circle cx="106" cy="200" r="4.5" fill="#f0f9ff" />
-          <circle cx="294" cy="200" r="4.5" fill="#f0f9ff" />
-          <circle cx="106" cy="200" r="13" fill="#38bdf8" opacity="0.35" />
-          <circle cx="294" cy="200" r="13" fill="#38bdf8" opacity="0.35" />
+          <circle className={s.flareDot} cx="106" cy="200" r="4.5" fill="#f0f9ff" />
+          <circle className={s.flareDot} cx="294" cy="200" r="4.5" fill="#f0f9ff" />
+          <circle className={s.flareHalo} cx="106" cy="200" r="13" fill="#38bdf8" opacity="0.35" />
+          <circle className={s.flareHalo} cx="294" cy="200" r="13" fill="#38bdf8" opacity="0.35" />
         </g>
       )}
 

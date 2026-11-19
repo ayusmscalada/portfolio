@@ -32,7 +32,7 @@ function useCommands() {
         profile.resumeUrl && {
           id: 'resume',
           group: 'Contact',
-          label: 'Download résumé',
+          label: 'Download resume',
           hint: 'PDF',
           run: () => window.open(profile.resumeUrl, '_blank', 'noopener'),
         },

@@ -477,3 +477,42 @@ em {
     animation: none;
   }
 }
+
+/* Light rays: thin, crisp beams fanning down from above the page that sway
+   slowly and breathe. A conic gradient (hard-edged beams, no blur, so no
+   smoky look) faded out towards the bottom with a mask. */
+:root,
+[data-theme='dark'] {
+  --ray: rgb(140 200 255 / 0.075);
+}
+
+[data-theme='light'] {
+  --ray: rgb(255 190 120 / 0.2);
+}
+
+.backdrop::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -30vh;
+  width: 220vmax;
+  height: 160vh;
+  margin-left: -110vmax;
+  transform-origin: 50% 0;
+  background: repeating-conic-gradient(from 160deg at 50% 0, var(--ray) 0deg 1.4deg, transparent 1.4deg 4.5deg, var(--ray) 4.5deg 5.2deg, transparent 5.2deg 9deg);
+  -webkit-mask-image: radial-gradient(ellipse 55% 85% at 50% 0, #000 20%, transparent 75%);
+  mask-image: radial-gradient(ellipse 55% 85% at 50% 0, #000 20%, transparent 75%);
+  animation: rays 22s ease-in-out infinite alternate;
+}
+
+@keyframes rays {
+  0% { transform: rotate(-5deg); opacity: 0.75; }
+  50% { opacity: 1; }
+  100% { transform: rotate(5deg); opacity: 0.8; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop::before {
+    animation: none;
+  }
+}

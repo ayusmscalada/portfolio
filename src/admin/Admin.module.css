@@ -733,7 +733,7 @@ select.input { cursor: pointer; }
 .itemTools .toolOn { color: var(--accent); }
 .itemTools .toolOff { color: var(--text-dim); }
 
-/* ---- résumé files --------------------------------------------------------- */
+/* ---- resume files --------------------------------------------------------- */
 .files { display: grid; gap: 12px; }
 .files .inline { align-items: center; }
 .fileList { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }

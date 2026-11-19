@@ -33,7 +33,7 @@ export function Hero() {
             </a>
             {profile.resumeUrl && (
               <a className={s.secondary} href={profile.resumeUrl} target="_blank" rel="noopener">
-                Résumé
+                resume
               </a>
             )}
           </div>

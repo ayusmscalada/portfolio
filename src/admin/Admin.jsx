@@ -294,7 +294,7 @@ export function Admin() {
 
   /**
    * Publishes one field right away, without publishing other unsaved edits
-   * (e.g. clearing the résumé link when its file is deleted). The draft gets
+   * (e.g. clearing the resume link when its file is deleted). The draft gets
    * the same change.
    */
   const publishField = useCallback(

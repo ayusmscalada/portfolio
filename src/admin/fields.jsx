@@ -413,13 +413,13 @@ function ConfirmDelete({ onConfirm }) {
   )
 }
 
-/* ---- résumé files -------------------------------------------------------- */
+/* ---- resume files -------------------------------------------------------- */
 
 const fileSize = (n) => (n >= 1e6 ? `${(n / 1e6).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1e3))} KB`)
 const fileDate = (iso) => (iso ? new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '')
 
 /**
- * Résumés stored in Supabase Storage (resumes/): upload, choose the one the
+ * resumes stored in Supabase Storage (resumes/): upload, choose the one the
  * site links to (profile.resumeUrl, published with Save), open, and delete.
  * Deleting removes the file from Supabase; if the live site links to it, the
  * link is removed from the live site at once so it never points at nothing.
@@ -456,9 +456,9 @@ export function ResumeManager() {
       setFiles((list) => [f, ...(list ?? [])])
       if (!current) {
         choose(f.url)
-        notify('Résumé uploaded and selected. Save changes to show it on the site.')
+        notify('resume uploaded and selected. Save changes to show it on the site.')
       } else {
-        notify('Résumé uploaded. Select it, then save, to show it on the site.')
+        notify('resume uploaded. Select it, then save, to show it on the site.')
       }
     } catch (err) {
       onError(err)
@@ -474,10 +474,10 @@ export function ResumeManager() {
       setFiles((list) => list.filter((x) => x.path !== f.path))
       if (live === f.url) {
         await publishField(['profile', 'resumeUrl'], '')
-        notify('Résumé deleted from Supabase, and the résumé button was removed from the live site.')
+        notify('resume deleted from Supabase, and the resume button was removed from the live site.')
       } else {
         if (current === f.url) choose('')
-        notify('Résumé deleted from Supabase.')
+        notify('resume deleted from Supabase.')
       }
     } catch (err) {
       onError(err)
@@ -490,17 +490,17 @@ export function ResumeManager() {
     <div className={s.files}>
       <div className={s.inline}>
         <button type="button" className={s.btn} disabled={busy} onClick={() => fileRef.current?.click()}>
-          {Icon.upload} {busy ? 'Uploading…' : 'Upload résumé'}
+          {Icon.upload} {busy ? 'Uploading…' : 'Upload resume'}
         </button>
         <span className={s.hint}>PDF or Word, up to 10 MB.</span>
         <input ref={fileRef} type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden onChange={(e) => onFile(e.target.files?.[0])} />
       </div>
 
-      {loadError && <p className={s.error}>Could not list résumés: {loadError}</p>}
+      {loadError && <p className={s.error}>Could not list resumes: {loadError}</p>}
 
       <ul className={s.fileList} aria-busy={files == null}>
         {files == null && <li className={s.fileEmpty}>Loading…</li>}
-        {files?.length === 0 && !loadError && <li className={s.fileEmpty}>No résumés uploaded yet.</li>}
+        {files?.length === 0 && !loadError && <li className={s.fileEmpty}>No resumes uploaded yet.</li>}
         {files?.map((f) => (
           <li key={f.path} className={s.fileRow} data-selected={current === f.url}>
             <label className={s.filePick}>
@@ -528,8 +528,8 @@ export function ResumeManager() {
             <label className={s.filePick}>
               <input type="radio" name="resume" checked={!current} onChange={() => choose('')} />
               <span className={s.fileMeta}>
-                <strong>No résumé</strong>
-                <span>Hide the résumé button on the site</span>
+                <strong>No resume</strong>
+                <span>Hide the resume button on the site</span>
               </span>
             </label>
           </li>
@@ -538,7 +538,7 @@ export function ResumeManager() {
 
       {external && (
         <p className={s.hint}>
-          The site currently links to <code>{current}</code>, which is not a file in this list. Pick a file above or “No résumé” to replace it.
+          The site currently links to <code>{current}</code>, which is not a file in this list. Pick a file above or “No resume” to replace it.
         </p>
       )}
     </div>

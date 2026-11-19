@@ -116,3 +116,63 @@
   overflow: hidden;
   border-radius: 50%;
 }
+
+/* ---- Light theme: made from the page's own colours -------------------------
+   The backdrop behind the page is cream with drifting peach, honey, lilac and
+   sky. The badge uses exactly that palette: a translucent cream glass disc
+   (the moving colours show through it), a warm-white crest, and edges and
+   letters that run peach → lilac → sky. CSS colour properties override the
+   SVG's dark-theme attributes. */
+:global([data-theme='light']) .st1 { stop-color: #fffaf3; stop-opacity: 0.82; }
+:global([data-theme='light']) .st2 { stop-color: #fdf0e3; stop-opacity: 0.72; }
+:global([data-theme='light']) .st3 { stop-color: #f8dcc6; stop-opacity: 0.7; }
+:global([data-theme='light']) .st4 { stop-color: #ffc9a3; }
+:global([data-theme='light']) .st5,
+:global([data-theme='light']) .st6 { stop-color: #d9c8ff; }
+:global([data-theme='light']) .st7 { stop-color: #f6a77d; }
+:global([data-theme='light']) .st8 { stop-color: #e58a5c; }
+:global([data-theme='light']) .st9 { stop-color: #9b7ce8; }
+:global([data-theme='light']) .st10 { stop-color: #6aa7f0; }
+:global([data-theme='light']) .st11 { stop-color: #ffffff; }
+:global([data-theme='light']) .st12 { stop-color: #fffaf2; }
+:global([data-theme='light']) .st13 { stop-color: #fbefe2; }
+:global([data-theme='light']) .st14 { stop-color: #f6a77d; }
+:global([data-theme='light']) .st15 { stop-color: #b79cf5; }
+:global([data-theme='light']) .st16 { stop-color: #6aa7f0; }
+:global([data-theme='light']) .st17 { stop-color: #e07a4c; }
+:global([data-theme='light']) .st18 { stop-color: #8f6be0; }
+:global([data-theme='light']) .st19 { stop-color: #4b8de6; }
+:global([data-theme='light']) .st20,
+:global([data-theme='light']) .st22 { stop-color: #f6a77d; }
+:global([data-theme='light']) .st21 { stop-color: #b79cf5; }
+
+:global([data-theme='light']) .ring { stroke: #f0b48f; stroke-opacity: 0.8; }
+:global([data-theme='light']) .orbitA { stroke: #e9a37c; }
+:global([data-theme='light']) .inner { stroke: #e9a37c; }
+:global([data-theme='light']) .trace { stroke: #ffffff; }
+:global([data-theme='light']) .traceGlow { stroke: #f6c3a3; }
+:global([data-theme='light']) .facet { stroke: #b4825f; stroke-opacity: 0.16; }
+:global([data-theme='light']) .sat { fill: #9b7ce8; }
+:global([data-theme='light']) .flareDot { fill: #e58a5c; }
+:global([data-theme='light']) .flareHalo { fill: #ffd2b5; }
+:global([data-theme='light']) .letterGlow { fill: #ffd9c2; stroke: #ffd9c2; }
+:global([data-theme='light']) .letter { stroke: #ffffff; }
+:global([data-theme='light']) .arcLabel { fill: #a8653f; }
+:global([data-theme='light']) .spark { fill: #f2a77f; }
+
+:global([data-theme='light']) .wrap::before {
+  background: radial-gradient(circle, rgb(255 190 150 / 0.32), rgb(190 165 255 / 0.14) 48%, transparent 68%);
+}
+
+:global([data-theme='light']) .svg {
+  filter: drop-shadow(0 18px 32px rgb(200 120 70 / 0.18));
+}
+
+:global([data-theme='light']) .mark {
+  filter: drop-shadow(0 2px 4px rgb(200 120 70 / 0.25));
+}
+
+:global([data-theme='light']) .mark {
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgb(224 122 76 / 0.45);
+}

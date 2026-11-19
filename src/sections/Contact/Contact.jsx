@@ -43,7 +43,7 @@ export function Contact() {
             {profile.resumeUrl && (
               <li>
                 <a href={profile.resumeUrl} target="_blank" rel="noopener">
-                  <span>Résumé</span>
+                  <span>resume</span>
                 </a>
               </li>
             )}
