@@ -38,8 +38,6 @@ All personal content (profile, hero, about, skills, projects, experience, contac
 
 Content changes need no redeploy: save in the admin and the live site picks them up.
 
-**Moving from Supabase (once):** with `BLOB_READ_WRITE_TOKEN`, `SUPABASE_URL` and `SUPABASE_ANON_KEY` in `.env.local`, run `npm run import:supabase`. It copies the saved content and every image or résumé it links to into Blob and rewrites the links. Supabase is not used after that.
-
 **Backend on a separate domain (optional):** if you deploy the backend as its own Vercel project, set `ALLOWED_ORIGINS=https://<your-site>` on the backend and `API_URL=https://<your-backend>` on the site (the site needs a rebuild after changing `API_URL`).
 
 ## Admin page
