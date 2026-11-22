@@ -1,13 +1,15 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import bundled from '@/data/content.json'
+import { fetchContent } from '@/lib/api.js'
 
 /**
- * Site content (name, skills, projects, …) is stored in Supabase and edited
- * from the admin page. main.jsx fetches it before the first render (started
- * from index.html, in parallel with the JS download); src/data/content.json is
- * only the fallback if Supabase is unreachable or not configured yet. Open tabs
- * in the same browser update on save (BroadcastChannel), and the admin preview
- * frame updates per keystroke (postMessage).
+ * Site content (name, skills, projects, …) is served by the backend
+ * (/api/content, stored in Supabase) and edited from the admin page. main.jsx
+ * fetches it before the first render (started from index.html, in parallel
+ * with the JS download); src/data/content.json is only the fallback if the
+ * backend is unreachable or has nothing yet. Open pages pick up saves by
+ * themselves (see the refresh below), tabs in the same browser update at once
+ * (BroadcastChannel), and the admin preview frame updates per keystroke.
  */
 const ContentContext = createContext(null)
 
@@ -58,8 +60,27 @@ export function ContentProvider({ initial, children }) {
     } catch {
       /* unsupported: fine */
     }
+
+    // Admin saves reach open pages by themselves: re-check the backend when the
+    // tab comes back into view and once a minute while it is visible. The page
+    // only re-renders when the content actually changed.
+    let last = JSON.stringify(initial?.profile ? initial : null)
+    const refresh = () => {
+      if (document.visibilityState !== 'visible') return
+      fetchContent().then((next) => {
+        if (!next?.profile) return
+        const text = JSON.stringify(next)
+        if (text === last) return
+        last = text
+        setRaw(next)
+      })
+    }
+    const timer = setInterval(refresh, 60_000)
+    document.addEventListener('visibilitychange', refresh)
     return () => {
       bc?.close()
+      clearInterval(timer)
+      document.removeEventListener('visibilitychange', refresh)
     }
   }, [])
 

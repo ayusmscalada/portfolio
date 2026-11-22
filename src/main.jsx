@@ -10,13 +10,13 @@ import './styles/base.css'
 import App from './App.jsx'
 import { ContentProvider } from './content/ContentContext.jsx'
 import { hashString } from './lib/hash.js'
-import { fetchContent } from './lib/supabase.js'
+import { fetchContent } from './lib/api.js'
 
 const root = createRoot(document.getElementById('root'))
 
 // The admin route is matched by hash, so its path never appears in the bundle
 // and nothing on the public site links to it. Saving still needs a Supabase
-// sign-in by an account listed in portfolio_admins.
+// sign-in by an account listed in portfolio_admins (checked by the backend).
 const path = location.pathname.replace(/\/+$/, '').toLowerCase()
 const isAdmin = path.length > 1 && hashString(path).toString(36) + hashString(`${path}#`).toString(36) === 'dmitrxu2qn96'
 
@@ -31,7 +31,7 @@ if (isAdmin) {
     )
   })
 } else {
-  // Content comes from Supabase. index.html starts that request before this
+  // Content comes from the backend (/api/content). index.html starts that request before this
   // bundle even downloads; wait for it (max 2.5 s, then use the bundled copy).
   const preview = window.parent !== window && new URLSearchParams(location.search).has('preview')
   const live = preview ? Promise.resolve(null) : (window.__content ?? fetchContent())

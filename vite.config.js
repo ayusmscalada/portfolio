@@ -63,49 +63,59 @@ const motionAttr = {
 }
 
 /**
- * Supabase settings come from SUPABASE_URL and SUPABASE_ANON_KEY (.env.local or
- * the host's environment). Only these two values are passed to the browser,
- * nothing else from the environment. The URL may be given with or without the
- * /rest/v1 suffix. A secret / service_role key is never shipped: it would give
- * every visitor full database access.
+ * The backend (server/app.js) runs as Vercel functions under /api in
+ * production. Here the same handler is mounted on the Vite server, so
+ * `npm run dev` (and `npm run preview`) serve the site and the API on one port.
+ * Its Supabase settings are read from .env.local and stay on the server:
+ * nothing from the environment is put into the browser bundle except API_URL.
  */
-function supabaseEnv(mode) {
+function backend(mode) {
   const env = loadEnv(mode, process.cwd(), '')
-  const url = (env.SUPABASE_URL ?? '').trim().replace(/\/+$/, '').replace(/\/rest\/v1$/, '')
-  let key = (env.SUPABASE_ANON_KEY ?? '').trim()
-  const role = (() => {
-    try {
-      return JSON.parse(Buffer.from(key.split('.')[1], 'base64url').toString()).role
-    } catch {
-      return null
-    }
-  })()
-  if (key.startsWith('sb_secret_') || role === 'service_role') {
-    console.error(
-      '\n[supabase] SUPABASE_ANON_KEY is a SECRET key. It was NOT added to the site.\n' +
-        '           Use the publishable key (sb_publishable_…) or the legacy "anon" key instead,\n' +
-        '           and rotate the secret key in Supabase → Project Settings → API Keys.\n',
-    )
-    key = ''
+  for (const k of ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'ALLOWED_ORIGINS']) if (env[k] && !process.env[k]) process.env[k] = env[k]
+
+  const mount = (server, load) =>
+    server.middlewares.use(async (req, res, next) => {
+      if (!req.url?.startsWith('/api/')) return next()
+      try {
+        const { handle } = await load()
+        const chunks = []
+        for await (const c of req) chunks.push(c)
+        const body = chunks.length ? Buffer.concat(chunks) : undefined
+        const headers = new Headers()
+        for (const [k, val] of Object.entries(req.headers)) if (typeof val === 'string') headers.set(k, val)
+        const response = await handle(
+          new Request(`http://${req.headers.host}${req.url}`, { method: req.method, headers, body: /^(GET|HEAD)$/.test(req.method) ? undefined : body }),
+        )
+        res.statusCode = response.status
+        response.headers.forEach((val, k) => res.setHeader(k, val))
+        res.end(Buffer.from(await response.arrayBuffer()))
+      } catch (err) {
+        next(err)
+      }
+    })
+
+  return {
+    name: 'portfolio-backend',
+    configureServer: (server) => {
+      mount(server, () => server.ssrLoadModule('/server/app.js'))
+    },
+    configurePreviewServer: (server) => {
+      mount(server, () => import('./server/app.js'))
+    },
   }
-  return { url, key }
 }
 
 export default defineConfig(({ mode }) => {
-  const sb = supabaseEnv(mode)
+  const apiUrl = (loadEnv(mode, process.cwd(), '').API_URL ?? '').trim().replace(/\/+$/, '')
   return {
   plugins: [
     react(),
     profileMeta(),
-    {
-      name: 'supabase-env',
-      transformIndexHtml: (html) => html.replaceAll('%SUPABASE_URL%', sb.url).replaceAll('%SUPABASE_ANON_KEY%', sb.key),
-    },
+    backend(mode),
+    { name: 'api-url', transformIndexHtml: (html) => html.replaceAll('%API_URL%', apiUrl) },
   ],
-  define: {
-    'import.meta.env.SUPABASE_URL': JSON.stringify(sb.url),
-    'import.meta.env.SUPABASE_ANON_KEY': JSON.stringify(sb.key),
-  },
+  // Optional: only when the backend is deployed separately from the site.
+  define: { 'import.meta.env.API_URL': JSON.stringify(apiUrl) },
   css: { postcss: { plugins: [motionAttr] } },
   // Bind to IPv4 loopback explicitly. "localhost" can resolve to IPv6 (::1),
   // which is unreachable on some Windows setups (VPN/proxy software).

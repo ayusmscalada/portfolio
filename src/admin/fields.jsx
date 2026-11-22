@@ -492,7 +492,7 @@ export function ResumeManager() {
         <button type="button" className={s.btn} disabled={busy} onClick={() => fileRef.current?.click()}>
           {Icon.upload} {busy ? 'Uploading…' : 'Upload resume'}
         </button>
-        <span className={s.hint}>PDF or Word, up to 10 MB.</span>
+        <span className={s.hint}>PDF or Word, up to 4 MB.</span>
         <input ref={fileRef} type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden onChange={(e) => onFile(e.target.files?.[0])} />
       </div>
 

@@ -1,11 +1,9 @@
 /**
- * Admin access to Supabase over plain REST: Auth (email + password), the
- * content row, and the public `portfolio` storage bucket. Row-level security
- * (supabase/setup.sql) only lets accounts listed in portfolio_admins write.
+ * Admin client for the backend (server/app.js): sign-in, content, and files.
+ * The browser never talks to Supabase directly; the backend does, with the
+ * signed-in admin's token, and Supabase row-level security still applies.
  */
-import { BUCKET, CONTENT_ROW, SB_KEY, SB_READY, SB_URL, publicUrl } from '@/lib/supabase.js'
-
-export { SB_READY }
+import { API_BASE } from '@/lib/api.js'
 
 const SESSION = 'portfolio-admin-session'
 let session = null
@@ -27,31 +25,31 @@ function keep(next) {
 export const hasSession = () => !!session
 export const sessionEmail = () => session?.email ?? ''
 
-async function request(url, init = {}) {
+async function call(path, { method = 'GET', body, headers = {}, auth = true } = {}) {
+  const h = { ...headers }
+  if (auth) h.authorization = `Bearer ${await token()}`
+  let payload = body
+  if (body !== undefined && !(body instanceof Blob) && !(body instanceof ArrayBuffer)) {
+    h['content-type'] = 'application/json'
+    payload = JSON.stringify(body)
+  }
   let res
   try {
-    res = await fetch(url, { ...init, headers: { apikey: SB_KEY, ...init.headers }, cache: 'no-store' })
+    res = await fetch(`${API_BASE}/api/${path}`, { method, headers: h, body: payload, cache: 'no-store' })
   } catch {
-    throw new Error('Cannot reach Supabase')
+    throw new Error('Cannot reach the backend')
   }
-  const text = await res.text()
   let data = null
   try {
-    data = text ? JSON.parse(text) : null
+    data = await res.json()
   } catch {
-    /* not JSON */
+    /* empty or not JSON */
   }
   if (!res.ok) {
-    const msg = data?.error_description || data?.msg || data?.message || data?.error || `Request failed (${res.status})`
-    const err = new Error(res.status === 403 || /row-level security/i.test(msg) ? 'This account is not allowed to edit the portfolio.' : msg)
-    err.status = res.status
-    throw err
+    if (res.status === 401 && auth) keep(null)
+    throw Object.assign(new Error(data?.error || `Request failed (${res.status})`), { status: res.status })
   }
   return data
-}
-
-function fromAuth(data) {
-  return { access: data.access_token, refresh: data.refresh_token, expires: Date.now() + data.expires_in * 1000, email: data.user?.email ?? session?.email }
 }
 
 /** A valid access token, refreshed shortly before it expires. */
@@ -59,12 +57,8 @@ async function token() {
   if (!session) throw Object.assign(new Error('Signed out'), { status: 401 })
   if (Date.now() > session.expires - 60_000) {
     try {
-      const data = await request(`${SB_URL}/auth/v1/token?grant_type=refresh_token`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ refresh_token: session.refresh }),
-      })
-      keep(fromAuth(data))
+      const next = await call('auth/refresh', { method: 'POST', body: { refresh: session.refresh }, auth: false })
+      keep({ ...next, email: next.email || session.email })
     } catch {
       keep(null)
       throw Object.assign(new Error('Session expired. Sign in again.'), { status: 401 })
@@ -73,55 +67,53 @@ async function token() {
   return session.access
 }
 
-const authed = async (extra = {}) => ({ authorization: `Bearer ${await token()}`, ...extra })
-
-/** Signs in and confirms the account is a portfolio admin. */
+/** Signs in; the backend also confirms the account is a portfolio admin. */
 export async function signIn(email, password) {
-  const data = await request(`${SB_URL}/auth/v1/token?grant_type=password`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ email, password }),
-  }).catch((err) => {
-    throw err.status === 400 ? new Error('Wrong email or password') : err
-  })
-  keep(fromAuth(data))
-  try {
-    await checkAdmin()
-  } catch (err) {
-    keep(null)
-    throw err
-  }
+  keep(await call('auth/login', { method: 'POST', body: { email, password }, auth: false }))
   return session.email
 }
 
-export async function checkAdmin() {
-  const rows = await request(`${SB_URL}/rest/v1/portfolio_admins?select=user_id`, { headers: await authed() })
-  if (!rows?.length) throw new Error('This account is not listed in portfolio_admins (see supabase/setup.sql).')
-}
+export const checkAdmin = () => call('auth/me')
 
 export function signOut() {
   const access = session?.access
   keep(null)
-  if (access) fetch(`${SB_URL}/auth/v1/logout`, { method: 'POST', headers: { apikey: SB_KEY, authorization: `Bearer ${access}` } }).catch(() => {})
+  if (access) fetch(`${API_BASE}/api/auth/logout`, { method: 'POST', headers: { authorization: `Bearer ${access}` } }).catch(() => {})
 }
 
-/** The stored content, or null when the table is still empty. */
+/** The stored content, or null when nothing has been saved yet. */
 export async function loadContent() {
-  const rows = await request(`${CONTENT_ROW}?id=eq.1&select=content,updated_at`, { headers: await authed() })
-  return rows?.[0]?.content ?? null
+  return (await call('admin/content')).content
 }
 
 export async function saveContent(content) {
-  await request(`${CONTENT_ROW}?on_conflict=id`, {
-    method: 'POST',
-    headers: await authed({ 'content-type': 'application/json', prefer: 'resolution=merge-duplicates,return=minimal' }),
-    body: JSON.stringify({ id: 1, content, updated_at: new Date().toISOString() }),
-  })
+  await call('admin/content', { method: 'PUT', body: { content } })
+}
+
+/* ---- files ----------------------------------------------------------------- */
+
+const MAX_UPLOAD = 4_000_000 // the backend runs on Vercel, which caps request bodies at 4.5 MB
+
+function upload(folder, name, ext, blob) {
+  if (blob.size > MAX_UPLOAD) throw new Error('File is larger than 4 MB')
+  const q = new URLSearchParams({ folder, name, ext })
+  return call(`admin/files?${q}`, { method: 'POST', body: blob, headers: { 'content-type': blob.type || 'application/octet-stream' } })
+}
+
+/** Files in projects/ or resumes/, newest first: [{ path, name, size, type, created, url }]. */
+export async function listFiles(folder) {
+  return (await call(`admin/files?folder=${folder}`)).files
+}
+
+/** Deletes files from storage (paths like "resumes/abc__cv.pdf"). */
+export async function deleteFiles(paths) {
+  if (!paths.length) return
+  await call('admin/files', { method: 'DELETE', body: { paths } })
 }
 
 /** Downscale to ≤1600px and re-encode as WebP before upload (GIF kept as-is). */
 async function prepare(file) {
-  if (!/^image\/(png|jpeg|webp)$/.test(file.type)) return { blob: file, type: file.type, ext: 'gif' }
+  if (!/^image\/(png|jpeg|webp)$/.test(file.type)) return { blob: file, ext: 'gif' }
   const bitmap = await createImageBitmap(file)
   const scale = Math.min(1, 1600 / bitmap.width)
   const canvas = document.createElement('canvas')
@@ -129,93 +121,48 @@ async function prepare(file) {
   canvas.height = Math.round(bitmap.height * scale)
   canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height)
   const blob = await new Promise((r) => canvas.toBlob(r, 'image/webp', 0.84))
-  return blob ? { blob, type: 'image/webp', ext: 'webp' } : { blob: file, type: file.type, ext: file.type.split('/')[1] }
+  return blob ? { blob, ext: 'webp' } : { blob: file, ext: file.type === 'image/png' ? 'png' : 'jpg' }
 }
 
-/** Uploads to the public bucket and returns its public URL. */
+/** Uploads a project image and returns its public URL. */
 export async function uploadImage(file) {
   if (!/^image\/(png|jpeg|webp|gif)$/.test(file.type)) throw new Error('Use a PNG, JPEG, WebP or GIF image')
-  const { blob, type, ext } = await prepare(file)
-  if (blob.size > 5_000_000) throw new Error('Image is larger than 5 MB')
+  const { blob, ext } = await prepare(file)
   const slug = file.name.toLowerCase().replace(/\.[a-z0-9]+$/, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'image'
-  const path = `projects/${slug}-${Date.now().toString(36)}.${ext}`
-  await request(`${SB_URL}/storage/v1/object/${BUCKET}/${path}`, {
-    method: 'POST',
-    headers: await authed({ 'content-type': type, 'cache-control': 'max-age=31536000' }),
-    body: blob,
-  })
-  const url = publicUrl(path)
-  rememberUpload(url)
+  const { url } = await upload('projects', slug, ext, blob)
+  uploadedImages.add(url)
   return url
 }
 
-/* ---- files in the bucket ------------------------------------------------ */
-
-const PUBLIC_PREFIX = publicUrl('')
-
-/** Bucket path of a URL that points into our bucket, else null. */
-export const pathOf = (url) => (typeof url === 'string' && url.startsWith(PUBLIC_PREFIX) ? decodeURIComponent(url.slice(PUBLIC_PREFIX.length)) : null)
-
-/** Files in a folder of the bucket, newest first: [{ path, name, size, type, created, url }]. */
-export async function listFiles(folder) {
-  const rows = await request(`${SB_URL}/storage/v1/object/list/${BUCKET}`, {
-    method: 'POST',
-    headers: await authed({ 'content-type': 'application/json' }),
-    body: JSON.stringify({ prefix: folder, limit: 200, sortBy: { column: 'created_at', order: 'desc' } }),
-  })
-  return (rows ?? [])
-    .filter((f) => f.id && !f.name.startsWith('.'))
-    .map((f) => {
-      const path = `${folder}/${f.name}`
-      return { path, name: displayName(f.name), size: f.metadata?.size ?? 0, type: f.metadata?.mimetype ?? '', created: f.created_at, url: publicUrl(path) }
-    })
-}
-
-/** Deletes files from the bucket. Throws unless every one was removed. */
-export async function deleteFiles(paths) {
-  if (!paths.length) return
-  const gone = await request(`${SB_URL}/storage/v1/object/${BUCKET}`, {
-    method: 'DELETE',
-    headers: await authed({ 'content-type': 'application/json' }),
-    body: JSON.stringify({ prefixes: paths }),
-  })
-  if ((gone?.length ?? 0) < paths.length) throw new Error('Supabase did not delete the file (check the storage policies in supabase/setup.sql).')
-}
-
-const RESUME_TYPES = {
+const RESUME_EXT = {
   'application/pdf': 'pdf',
   'application/msword': 'doc',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
 }
 
-// Stored as "<timestamp>__<file-name>.<ext>" so names stay readable and unique.
-const displayName = (stored) => stored.replace(/^[a-z0-9]+__/, '')
-
-/** Uploads a resume (PDF or Word, ≤10 MB) to resumes/ and returns its file entry. */
+/** Uploads a resume (PDF or Word, ≤4 MB) and returns its file entry. */
 export async function uploadResume(file) {
-  const ext = RESUME_TYPES[file.type] ?? (/\.(pdf|docx?)$/i.exec(file.name)?.[1].toLowerCase())
+  const ext = RESUME_EXT[file.type] ?? /\.(pdf|docx?)$/i.exec(file.name)?.[1].toLowerCase()
   if (!ext) throw new Error('Use a PDF or Word (.doc, .docx) file')
-  if (file.size > 10_000_000) throw new Error('File is larger than 10 MB')
-  const type = Object.keys(RESUME_TYPES).find((t) => RESUME_TYPES[t] === ext)
-  const base = file.name.replace(/\.[^.]+$/, '').replace(/[^A-Za-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'resume'
-  const path = `resumes/${Date.now().toString(36)}__${base}.${ext}`
-  await request(`${SB_URL}/storage/v1/object/${BUCKET}/${path}`, {
-    method: 'POST',
-    headers: await authed({ 'content-type': type, 'cache-control': 'max-age=60' }),
-    body: file,
-  })
-  return { path, name: `${base}.${ext}`, size: file.size, type, created: new Date().toISOString(), url: publicUrl(path) }
+  return upload('resumes', file.name, ext, file)
+}
+
+/* ---- unused project images ------------------------------------------------- */
+
+// Storage path ("projects/…") of a public URL in our bucket, else null.
+const pathOf = (url) => {
+  const m = typeof url === 'string' && /\/storage\/v1\/object\/public\/portfolio\/(projects\/[^?#/]+)$/.exec(url)
+  return m ? decodeURIComponent(m[1]) : null
 }
 
 /* Project images uploaded in this tab: if they end up unused they are deleted on save. */
 const uploadedImages = new Set()
-export const rememberUpload = (url) => uploadedImages.add(url)
 
-/** Every bucket path under projects/ referenced anywhere in the content. */
+/** Every projects/ image path referenced anywhere in the content. */
 function imagePaths(content, out = new Set()) {
   if (typeof content === 'string') {
     const p = pathOf(content)
-    if (p?.startsWith('projects/')) out.add(p)
+    if (p) out.add(p)
   } else if (content && typeof content === 'object') {
     for (const v of Object.values(content)) imagePaths(v, out)
   }
@@ -227,13 +174,13 @@ function imagePaths(content, out = new Set()) {
  * uploaded in this tab) but are no longer used. Returns how many were deleted.
  */
 export async function cleanupImages(previous, next) {
-  const keep = imagePaths(next)
+  const keepPaths = imagePaths(next)
   const candidates = imagePaths(previous)
   for (const url of uploadedImages) {
     const p = pathOf(url)
     if (p) candidates.add(p)
   }
-  const unused = [...candidates].filter((p) => !keep.has(p))
+  const unused = [...candidates].filter((p) => !keepPaths.has(p))
   if (!unused.length) return 0
   await deleteFiles(unused)
   for (const url of [...uploadedImages]) if (unused.includes(pathOf(url))) uploadedImages.delete(url)

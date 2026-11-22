@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import bundled from '@/data/content.json'
 import { CONTENT_CHANNEL, DRAFT_MESSAGE } from '@/content/ContentContext.jsx'
-import { SB_READY, checkAdmin, cleanupImages, hasSession, loadContent, saveContent, sessionEmail, signIn, signOut } from './api.js'
+import { checkAdmin, cleanupImages, hasSession, loadContent, saveContent, sessionEmail, signIn, signOut } from './api.js'
 import { EditorContext, Icon, setIn, useEditor } from './fields.jsx'
 import { AboutForm, ContactForm, ExperienceForm, HeroForm, ProfileForm, ProjectsForm, SkillsForm } from './forms.jsx'
 import s from './Admin.module.css'
@@ -41,7 +41,7 @@ function Login({ onDone }) {
       <form className={s.login} onSubmit={submit}>
         <span className={s.loginIcon}>{Icon.lock}</span>
         <h1>Admin</h1>
-        <p>Sign in with your Supabase admin account.</p>
+        <p>Sign in with your admin account.</p>
         <input className={s.input} type="email" autoFocus autoComplete="username" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         <input className={s.input} type="password" required autoComplete="current-password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
         {error && <p className={s.error} role="alert">{error}</p>}
@@ -49,21 +49,6 @@ function Login({ onDone }) {
           {busy ? 'Signing in…' : 'Sign in'}
         </button>
       </form>
-    </main>
-  )
-}
-
-function NotConfigured() {
-  return (
-    <main className={s.loginPage}>
-      <div className={s.login}>
-        <span className={s.loginIcon}>{Icon.lock}</span>
-        <h1>Connect Supabase</h1>
-        <p>
-          Add <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> to <code>.env.local</code> (and to your host's environment variables), run{' '}
-          <code>supabase/setup.sql</code> in the Supabase SQL editor, then restart the dev server.
-        </p>
-      </div>
     </main>
   )
 }
@@ -191,7 +176,7 @@ function DataForm() {
 
 export function Admin() {
   const [auth, setAuth] = useState(null)
-  const [checking, setChecking] = useState(SB_READY && hasSession())
+  const [checking, setChecking] = useState(hasSession())
   const [saved, setSaved] = useState(null)
   const [draft, setDraft] = useState(null)
   const [tab, setTab] = useState('profile')
@@ -231,13 +216,13 @@ export function Admin() {
           setDraft(c)
         } else {
           // First run: nothing in Supabase yet. Start from the bundled content.
-          setNotice('Supabase has no portfolio content yet. This is the starter content: edit it, then save to publish.')
+          setNotice('The backend has no portfolio content yet. This is the starter content: edit it, then save to publish.')
           setSaved(null)
           setDraft(bundled)
         }
       })
       .catch((err) => {
-        setNotice(`Could not load content from Supabase: ${err.message}`)
+        setNotice(`Could not load content from the backend: ${err.message}`)
         setSaved(null)
         setDraft(bundled)
       })
@@ -285,7 +270,7 @@ export function Admin() {
       } catch {
         /* the content is saved; a leftover image does no harm */
       }
-      notify(`Saved to Supabase${removed ? ` and deleted ${removed} unused image${removed > 1 ? 's' : ''}` : ''}. The live site shows it on the next page load.`)
+      notify(`Saved${removed ? ` and deleted ${removed} unused image${removed > 1 ? 's' : ''}` : ''}. The live site shows it on the next page load.`)
     } catch (err) {
       setStatus('idle')
       onError(err)
@@ -330,7 +315,6 @@ export function Admin() {
 
   const ctx = useMemo(() => ({ draft, saved, set, replace, notify, publishField, onError }), [draft, saved, set, replace, notify, publishField, onError])
 
-  if (!SB_READY) return <NotConfigured />
   if (checking) return <main className={s.loginPage} aria-busy="true" />
   if (!auth) return <Login onDone={setAuth} />
   if (!draft) return <main className={s.loginPage}>Loading content…</main>
@@ -346,7 +330,7 @@ export function Admin() {
             <span className={s.logo}>{(draft.profile.monogram || `${draft.profile.firstName?.[0] ?? ''}${draft.profile.lastName?.[0] ?? ''}`).slice(0, 2).toUpperCase()}</span>
             <div>
               <strong>Portfolio admin</strong>
-              <span>Supabase · {auth}</span>
+              <span>{auth}</span>
             </div>
           </div>
           <div className={s.actions}>
