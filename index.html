@@ -17,7 +17,11 @@
       ;(function () {
         if (location.search.indexOf('preview') !== -1) return
         window.__content = fetch('%API_URL%'.replace(/\/+$/, '') + '/api/content')
-          .then(function (r) { return r.ok ? r.json() : null })
+          .then(function (r) {
+            if (r.ok) return r.json()
+            console.warn('[portfolio] /api/content failed (' + r.status + '), showing the built-in content.')
+            return null
+          })
           .then(function (d) { return (d && d.content) || null })
           .catch(function () { return null })
       })()
