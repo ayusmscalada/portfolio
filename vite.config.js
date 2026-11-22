@@ -66,12 +66,12 @@ const motionAttr = {
  * The backend (server/app.js) runs as Vercel functions under /api in
  * production. Here the same handler is mounted on the Vite server, so
  * `npm run dev` (and `npm run preview`) serve the site and the API on one port.
- * Its Supabase settings are read from .env.local and stay on the server:
+ * Its settings (Blob token, admin password) are read from .env.local and stay on the server:
  * nothing from the environment is put into the browser bundle except API_URL.
  */
 function backend(mode) {
   const env = loadEnv(mode, process.cwd(), '')
-  for (const k of ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'ALLOWED_ORIGINS']) if (env[k] && !process.env[k]) process.env[k] = env[k]
+  for (const k of ['BLOB_READ_WRITE_TOKEN', 'BLOB_ACCESS', 'ADMIN_PASSWORD', 'SESSION_SECRET', 'ALLOWED_ORIGINS']) if (env[k] && !process.env[k]) process.env[k] = env[k]
 
   const mount = (server, load) =>
     server.middlewares.use(async (req, res, next) => {

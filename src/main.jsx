@@ -15,8 +15,8 @@ import { fetchContent } from './lib/api.js'
 const root = createRoot(document.getElementById('root'))
 
 // The admin route is matched by hash, so its path never appears in the bundle
-// and nothing on the public site links to it. Saving still needs a Supabase
-// sign-in by an account listed in portfolio_admins (checked by the backend).
+// and nothing on the public site links to it. Saving still needs the
+// admin password (ADMIN_PASSWORD, checked by the backend).
 const path = location.pathname.replace(/\/+$/, '').toLowerCase()
 const isAdmin = path.length > 1 && hashString(path).toString(36) + hashString(`${path}#`).toString(36) === 'dmitrxu2qn96'
 

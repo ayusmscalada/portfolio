@@ -20,7 +20,6 @@ const TABS = [
 /* ---- login ------------------------------------------------------------- */
 
 function Login({ onDone }) {
-  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -29,7 +28,7 @@ function Login({ onDone }) {
     setBusy(true)
     setError('')
     try {
-      onDone(await signIn(email.trim(), password))
+      onDone(await signIn(password))
     } catch (err) {
       setError(err.message)
     } finally {
@@ -41,9 +40,8 @@ function Login({ onDone }) {
       <form className={s.login} onSubmit={submit}>
         <span className={s.loginIcon}>{Icon.lock}</span>
         <h1>Admin</h1>
-        <p>Sign in with your admin account.</p>
-        <input className={s.input} type="email" autoFocus autoComplete="username" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        <input className={s.input} type="password" required autoComplete="current-password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+        <p>Enter the admin password.</p>
+        <input className={s.input} type="password" autoFocus required autoComplete="current-password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
         {error && <p className={s.error} role="alert">{error}</p>}
         <button className={s.primary} disabled={busy}>
           {busy ? 'Signing in…' : 'Sign in'}
@@ -215,7 +213,7 @@ export function Admin() {
           setSaved(c)
           setDraft(c)
         } else {
-          // First run: nothing in Supabase yet. Start from the bundled content.
+          // First run: nothing stored yet. Start from the bundled content.
           setNotice('The backend has no portfolio content yet. This is the starter content: edit it, then save to publish.')
           setSaved(null)
           setDraft(bundled)

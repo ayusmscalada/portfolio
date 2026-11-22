@@ -317,7 +317,7 @@ export function ContactForm() {
         <Text path={['contact', 'title']} label="Section title" hint={RICH} />
         <Text path={['contact', 'lede']} label="Intro" multiline rows={2} />
       </Group>
-      <Group title="resume" hint="Upload resumes to Supabase and pick the one visitors can open. Your choice goes live when you save. Deleting a file removes it from Supabase.">
+      <Group title="resume" hint="Upload resumes and pick the one visitors can open. Your choice goes live when you save. Deleting a file removes it from storage.">
         <ResumeManager />
       </Group>
       <Group title="Availability">

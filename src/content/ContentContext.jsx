@@ -1,10 +1,10 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import bundled from '@/data/content.json'
-import { fetchContent } from '@/lib/api.js'
+import { API_BASE, fetchContent } from '@/lib/api.js'
 
 /**
  * Site content (name, skills, projects, …) is served by the backend
- * (/api/content, stored in Supabase) and edited from the admin page. main.jsx
+ * (/api/content, stored in Vercel Blob) and edited from the admin page. main.jsx
  * fetches it before the first render (started from index.html, in parallel
  * with the JS download); src/data/content.json is only the fallback if the
  * backend is unreachable or has nothing yet. Open pages pick up saves by
@@ -23,7 +23,8 @@ export function resolveContent(raw) {
   const profile = raw.profile ?? {}
   const years = Math.max(0, new Date().getFullYear() - (Number(profile.since) || new Date().getFullYear()))
   const fill = (v) => {
-    if (typeof v === 'string') return v.replaceAll('{years}', String(years))
+    // Stored files are served by the backend at /api/files/…
+    if (typeof v === 'string') return v.startsWith('/api/files/') ? API_BASE + v : v.replaceAll('{years}', String(years))
     if (Array.isArray(v)) return v.map(fill)
     if (v && typeof v === 'object') return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, fill(x)]))
     return v

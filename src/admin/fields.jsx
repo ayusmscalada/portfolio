@@ -248,7 +248,7 @@ export function ImageField({ path, label, hint }) {
     setBusy(true)
     try {
       setValue(await uploadImage(file))
-      notify('Image uploaded to Supabase Storage')
+      notify('Image uploaded')
     } catch (err) {
       notify(err.message, 'error')
     } finally {
@@ -419,9 +419,9 @@ const fileSize = (n) => (n >= 1e6 ? `${(n / 1e6).toFixed(1)} MB` : `${Math.max(1
 const fileDate = (iso) => (iso ? new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '')
 
 /**
- * resumes stored in Supabase Storage (resumes/): upload, choose the one the
+ * resumes stored in Vercel Blob (resumes/): upload, choose the one the
  * site links to (profile.resumeUrl, published with Save), open, and delete.
- * Deleting removes the file from Supabase; if the live site links to it, the
+ * Deleting removes the file from storage; if the live site links to it, the
  * link is removed from the live site at once so it never points at nothing.
  */
 export function ResumeManager() {
@@ -474,10 +474,10 @@ export function ResumeManager() {
       setFiles((list) => list.filter((x) => x.path !== f.path))
       if (live === f.url) {
         await publishField(['profile', 'resumeUrl'], '')
-        notify('resume deleted from Supabase, and the resume button was removed from the live site.')
+        notify('resume deleted, and the resume button was removed from the live site.')
       } else {
         if (current === f.url) choose('')
-        notify('resume deleted from Supabase.')
+        notify('resume deleted.')
       }
     } catch (err) {
       onError(err)

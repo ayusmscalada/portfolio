@@ -3,32 +3,40 @@
  * Vercel function in api/index.js and, in development, by the Vite dev server
  * (vite.config.js), so `npm run dev` still runs everything on one port.
  *
- * Data lives in Supabase (supabase/setup.sql): the content row and the public
- * `portfolio` storage bucket. Only this backend talks to Supabase; the browser
- * talks to /api. Writes are made with the signed-in admin's own token, so
- * Supabase's row-level security still has the final say.
+ * Everything is stored in Vercel Blob:
+ *   content.json        the site content edited in the admin page
+ *   projects/<file>     project images
+ *   resumes/<file>      resumes
+ * Files are served through this backend at /api/files/<path>, so it works with
+ * public and private Blob stores alike and images stay on the site's domain.
  *
  * Environment (server only, never sent to the browser):
- *   SUPABASE_URL        https://<ref>.supabase.co  (a /rest/v1 suffix is fine)
- *   SUPABASE_ANON_KEY   the publishable (sb_publishable_…) or legacy anon key
- *   ALLOWED_ORIGINS     optional, comma-separated: only needed when the site is
- *                       served from a different domain than this backend
+ *   BLOB_READ_WRITE_TOKEN  added by Vercel when a Blob store is connected
+ *   ADMIN_PASSWORD         the admin page password
+ *   SESSION_SECRET         optional: signs admin sessions (derived from the two
+ *                          values above when not set; changing the password
+ *                          signs every session out)
+ *   ALLOWED_ORIGINS        optional, comma-separated: only needed when the site
+ *                          is served from a different domain than this backend
  *
  * Routes:
- *   GET    /api/content                public site content (cached a few seconds)
+ *   GET    /api/content                public site content
+ *   GET    /api/files/<folder>/<name>  a stored image or resume
  *   GET    /api/health                 is the backend configured?
- *   POST   /api/auth/login             { email, password } → session
+ *   POST   /api/auth/login             { password } → session
  *   POST   /api/auth/refresh           { refresh } → session
  *   POST   /api/auth/logout
- *   GET    /api/auth/me                admin check
+ *   GET    /api/auth/me                session check
  *   GET    /api/admin/content          stored content for the editor (or null)
  *   PUT    /api/admin/content          { content } → save
  *   GET    /api/admin/files?folder=    list projects/ or resumes/
  *   POST   /api/admin/files?folder=&name=&ext=   raw body → upload (≤ 4 MB)
  *   DELETE /api/admin/files            { paths: [...] } → delete
  */
+import { createHash, createHmac, timingSafeEqual } from 'node:crypto'
+import { del, get, list, put } from '@vercel/blob'
 
-const BUCKET = 'portfolio'
+const CONTENT = 'content.json'
 const FOLDERS = new Set(['projects', 'resumes'])
 const MAX_UPLOAD = 4_000_000 // Vercel functions accept request bodies up to 4.5 MB
 const FILE_TYPES = {
@@ -42,12 +50,11 @@ const FILE_TYPES = {
   docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 }
 const FOLDER_EXTS = { projects: ['webp', 'png', 'jpg', 'jpeg', 'gif'], resumes: ['pdf', 'doc', 'docx'] }
+const ACCESS_HOURS = 12
+const REFRESH_DAYS = 14
 
-function config() {
-  const url = (process.env.SUPABASE_URL ?? '').trim().replace(/\/+$/, '').replace(/\/rest\/v1$/, '')
-  const key = (process.env.SUPABASE_ANON_KEY ?? '').trim()
-  return { url, key, ready: /^https:\/\//.test(url) && !!key }
-}
+const env = (k) => (process.env[k] ?? '').trim()
+const storageReady = () => !!env('BLOB_READ_WRITE_TOKEN')
 
 class HttpError extends Error {
   constructor(status, message) {
@@ -66,7 +73,7 @@ function json(data, status = 200, headers = {}) {
 }
 
 function withCors(request, response) {
-  const allowed = (process.env.ALLOWED_ORIGINS ?? '').split(',').map((s) => s.trim()).filter(Boolean)
+  const allowed = env('ALLOWED_ORIGINS').split(',').map((s) => s.trim()).filter(Boolean)
   const origin = request.headers.get('origin')
   if (!origin || !allowed.includes(origin)) return response
   const headers = new Headers(response.headers)
@@ -78,60 +85,152 @@ function withCors(request, response) {
   return new Response(response.body, { status: response.status, headers })
 }
 
-/* ---- Supabase ------------------------------------------------------------ */
+/* ---- Vercel Blob --------------------------------------------------------- */
 
-async function supabase(path, { token, headers, ...init } = {}) {
-  const { url, key } = config()
-  let res
+// A Blob store is either public or private, and every call must say which.
+// Start with public and switch once if the store says otherwise.
+let access = env('BLOB_ACCESS') === 'private' ? 'private' : 'public'
+const isAccessError = (err) => /\b(private|public)\b/i.test(err?.message ?? '') && /access|store/i.test(err?.message ?? '')
+
+async function blob(fn) {
+  if (!storageReady()) throw new HttpError(503, 'Storage is not configured: connect a Vercel Blob store (BLOB_READ_WRITE_TOKEN).')
   try {
-    res = await fetch(`${url}${path}`, {
-      ...init,
-      headers: { apikey: key, ...(token ? { authorization: `Bearer ${token}` } : {}), ...headers },
-    })
-  } catch {
-    throw new HttpError(502, 'The backend cannot reach Supabase.')
+    return await fn(access)
+  } catch (err) {
+    if (isAccessError(err)) {
+      access = access === 'public' ? 'private' : 'public'
+      try {
+        return await fn(access)
+      } catch (again) {
+        err = again
+      }
+    }
+    if (err instanceof HttpError) throw err
+    console.error(err)
+    throw new HttpError(502, `Storage error: ${err?.message ?? 'unknown'}`)
   }
-  const text = await res.text()
-  let data = null
-  try {
-    data = text ? JSON.parse(text) : null
-  } catch {
-    /* not JSON */
-  }
-  if (!res.ok) {
-    const msg = data?.error_description || data?.msg || data?.message || data?.error || `Supabase request failed (${res.status})`
-    if (res.status === 403 || /row-level security/i.test(msg)) throw new HttpError(403, 'This account is not allowed to edit the portfolio.')
-    throw new HttpError(res.status === 400 || res.status === 401 ? res.status : 502, msg)
-  }
-  return data
 }
 
-const publicUrl = (path) => `${config().url}/storage/v1/object/public/${BUCKET}/${path}`
+async function readContent() {
+  const res = await blob((a) => get(CONTENT, { access: a, useCache: false }))
+  if (!res || res.statusCode !== 200) return { content: null, updatedAt: null }
+  const text = await new Response(res.stream).text()
+  return { content: JSON.parse(text), updatedAt: res.blob.uploadedAt }
+}
 
-const session = (data) => ({
-  access: data.access_token,
-  refresh: data.refresh_token,
-  expires: Date.now() + data.expires_in * 1000,
-  email: data.user?.email ?? '',
+const fileUrl = (path) => `/api/files/${path}`
+const displayName = (stored) => stored.replace(/^[a-z0-9]+__/, '')
+
+function safePath(path) {
+  if (typeof path !== 'string' || path.includes('..') || path.includes('\\')) return false
+  const [folder, name, ...rest] = path.split('/')
+  return FOLDERS.has(folder) && !!name && !rest.length
+}
+
+async function listFiles(folder) {
+  const blobs = []
+  let cursor
+  do {
+    const page = await blob(() => list({ prefix: `${folder}/`, cursor, limit: 1000 }))
+    blobs.push(...page.blobs)
+    cursor = page.hasMore ? page.cursor : undefined
+  } while (cursor)
+  return blobs
+    .filter((b) => safePath(b.pathname) && !b.pathname.split('/')[1].startsWith('.'))
+    .sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt))
+    .map((b) => {
+      const name = b.pathname.split('/')[1]
+      const ext = name.split('.').pop().toLowerCase()
+      return { path: b.pathname, name: displayName(name), size: b.size, type: FILE_TYPES[ext] ?? '', created: b.uploadedAt, url: fileUrl(b.pathname) }
+    })
+}
+
+async function uploadFile(request, params) {
+  const folder = params.get('folder')
+  const ext = (params.get('ext') ?? '').toLowerCase()
+  if (!FOLDERS.has(folder) || !FOLDER_EXTS[folder].includes(ext)) throw new HttpError(400, 'Unsupported file type.')
+  const body = Buffer.from(await request.arrayBuffer())
+  if (!body.byteLength) throw new HttpError(400, 'The file is empty.')
+  if (body.byteLength > MAX_UPLOAD) throw new HttpError(413, 'File is larger than 4 MB.')
+  const base =
+    (params.get('name') ?? '')
+      .replace(/\.[^.]+$/, '')
+      .replace(/[^A-Za-z0-9._-]+/g, '-')
+      .replace(/^[-.]+|[-.]+$/g, '')
+      .slice(0, 60) || 'file'
+  const stamp = Date.now().toString(36)
+  // Images: "<name>-<stamp>.webp"; resumes: "<stamp>__<name>.pdf" (readable name kept).
+  const stored = folder === 'resumes' ? `${stamp}__${base}.${ext}` : `${base.toLowerCase()}-${stamp}.${ext}`
+  const path = `${folder}/${stored}`
+  await blob((a) => put(path, body, { access: a, contentType: FILE_TYPES[ext], addRandomSuffix: false }))
+  return { path, name: displayName(stored), size: body.byteLength, type: FILE_TYPES[ext], created: new Date().toISOString(), url: fileUrl(path) }
+}
+
+async function serveFile(path) {
+  if (!safePath(path)) throw new HttpError(404, 'Not found')
+  const res = await blob((a) => get(path, { access: a }))
+  if (!res || res.statusCode !== 200) throw new HttpError(404, 'Not found')
+  const resume = path.startsWith('resumes/')
+  const name = displayName(path.split('/')[1])
+  // Image names never change (a new upload gets a new name), so they cache for
+  // a year; resumes are short-lived so a deleted one disappears quickly.
+  const cache = resume ? 'public, max-age=60' : 'public, max-age=31536000, immutable'
+  return new Response(res.stream, {
+    headers: {
+      'content-type': res.blob.contentType || 'application/octet-stream',
+      'cache-control': cache,
+      'cdn-cache-control': resume ? 'public, s-maxage=60' : 'public, s-maxage=31536000, immutable',
+      ...(resume ? { 'content-disposition': `inline; filename="${name.replace(/[^\w.-]/g, '_')}"` } : {}),
+      'x-content-type-options': 'nosniff',
+    },
+  })
+}
+
+/* ---- admin sessions ------------------------------------------------------- */
+
+function secret() {
+  return env('SESSION_SECRET') || createHash('sha256').update(`portfolio-admin|${env('ADMIN_PASSWORD')}|${env('BLOB_READ_WRITE_TOKEN')}`).digest('hex')
+}
+const b64 = (s) => Buffer.from(s).toString('base64url')
+const sign = (data) => createHmac('sha256', secret()).update(data).digest('base64url')
+
+function makeToken(type, seconds) {
+  const data = b64(JSON.stringify({ t: type, exp: Date.now() + seconds * 1000 }))
+  return `${data}.${sign(data)}`
+}
+
+function verifyToken(token, type) {
+  const [data, sig] = String(token ?? '').split('.')
+  if (!data || !sig) return false
+  const expected = Buffer.from(sign(data))
+  const given = Buffer.from(sig)
+  if (expected.length !== given.length || !timingSafeEqual(expected, given)) return false
+  try {
+    const p = JSON.parse(Buffer.from(data, 'base64url').toString())
+    return p.t === type && p.exp > Date.now()
+  } catch {
+    return false
+  }
+}
+
+const session = () => ({
+  access: makeToken('access', ACCESS_HOURS * 3600),
+  refresh: makeToken('refresh', REFRESH_DAYS * 86400),
+  expires: Date.now() + ACCESS_HOURS * 3600 * 1000,
+  email: 'Admin',
 })
 
-function bearer(request) {
-  const m = /^Bearer\s+(.+)$/i.exec(request.headers.get('authorization') ?? '')
-  if (!m) throw new HttpError(401, 'Sign in first.')
-  return m[1]
+function passwordMatches(given) {
+  const a = createHash('sha256').update(String(given ?? '')).digest()
+  const b = createHash('sha256').update(env('ADMIN_PASSWORD')).digest()
+  return timingSafeEqual(a, b)
 }
 
-/** The caller's token, after checking it belongs to an account in portfolio_admins. */
-async function requireAdmin(request) {
-  const token = bearer(request)
-  let rows
-  try {
-    rows = await supabase('/rest/v1/portfolio_admins?select=user_id', { token })
-  } catch (err) {
-    throw err.status === 401 ? new HttpError(401, 'Session expired. Sign in again.') : err
-  }
-  if (!rows?.length) throw new HttpError(403, 'This account is not listed in portfolio_admins (see supabase/setup.sql).')
-  return token
+function requireAdmin(request) {
+  if (!env('ADMIN_PASSWORD')) throw new HttpError(503, 'Admin sign-in is not configured: set ADMIN_PASSWORD.')
+  const m = /^Bearer\s+(.+)$/i.exec(request.headers.get('authorization') ?? '')
+  if (!m) throw new HttpError(401, 'Sign in first.')
+  if (!verifyToken(m[1], 'access')) throw new HttpError(401, 'Session expired. Sign in again.')
 }
 
 async function readJson(request) {
@@ -142,172 +241,87 @@ async function readJson(request) {
   }
 }
 
-/* ---- files --------------------------------------------------------------- */
-
-const displayName = (stored) => stored.replace(/^[a-z0-9]+__/, '')
-
-function safePath(path) {
-  if (typeof path !== 'string' || path.includes('..') || path.includes('\\')) return false
-  const [folder, name, ...rest] = path.split('/')
-  return FOLDERS.has(folder) && !!name && !rest.length
-}
-
-async function listFiles(token, folder) {
-  const rows = await supabase(`/storage/v1/object/list/${BUCKET}`, {
-    method: 'POST',
-    token,
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ prefix: folder, limit: 200, sortBy: { column: 'created_at', order: 'desc' } }),
-  })
-  return (rows ?? [])
-    .filter((f) => f.id && !f.name.startsWith('.'))
-    .map((f) => {
-      const path = `${folder}/${f.name}`
-      return { path, name: displayName(f.name), size: f.metadata?.size ?? 0, type: f.metadata?.mimetype ?? '', created: f.created_at, url: publicUrl(path) }
-    })
-}
-
-async function uploadFile(request, token, params) {
-  const folder = params.get('folder')
-  const ext = (params.get('ext') ?? '').toLowerCase()
-  if (!FOLDERS.has(folder) || !FOLDER_EXTS[folder].includes(ext)) throw new HttpError(400, 'Unsupported file type.')
-  const body = await request.arrayBuffer()
-  if (!body.byteLength) throw new HttpError(400, 'The file is empty.')
-  if (body.byteLength > MAX_UPLOAD) throw new HttpError(413, 'File is larger than 4 MB.')
-  const base =
-    (params.get('name') ?? '')
-      .replace(/\.[^.]+$/, '')
-      .replace(/[^A-Za-z0-9._-]+/g, '-')
-      .replace(/^[-.]+|[-.]+$/g, '')
-      .slice(0, 60) || 'file'
-  const stamp = Date.now().toString(36)
-  // Images: "<name>-<stamp>.webp"; résumés: "<stamp>__<name>.pdf" (readable name kept).
-  const stored = folder === 'resumes' ? `${stamp}__${base}.${ext}` : `${base.toLowerCase()}-${stamp}.${ext}`
-  const path = `${folder}/${stored}`
-  await supabase(`/storage/v1/object/${BUCKET}/${path}`, {
-    method: 'POST',
-    token,
-    headers: { 'content-type': FILE_TYPES[ext], 'cache-control': folder === 'resumes' ? 'max-age=60' : 'max-age=31536000' },
-    body,
-  })
-  return { path, name: displayName(stored), size: body.byteLength, type: FILE_TYPES[ext], created: new Date().toISOString(), url: publicUrl(path) }
-}
-
-async function deleteFiles(token, paths) {
-  if (!Array.isArray(paths) || !paths.length) return { deleted: 0 }
-  if (paths.length > 100 || !paths.every(safePath)) throw new HttpError(400, 'Invalid file path.')
-  const gone = await supabase(`/storage/v1/object/${BUCKET}`, {
-    method: 'DELETE',
-    token,
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ prefixes: paths }),
-  })
-  if ((gone?.length ?? 0) < paths.length) throw new HttpError(502, 'Supabase did not delete the file (check the storage policies in supabase/setup.sql).')
-  return { deleted: gone.length }
-}
-
 /* ---- routes -------------------------------------------------------------- */
 
 async function route(request, path, params) {
   const method = request.method
+  if ((method === 'GET' || method === 'HEAD') && path.startsWith('files/')) return serveFile(path.slice(6))
   const key = `${method} ${path}`
 
-  if (key === 'GET health') return json({ ok: true, configured: config().ready })
-  if (!config().ready) throw new HttpError(503, 'The backend is not configured: set SUPABASE_URL and SUPABASE_ANON_KEY in its environment variables.')
-
   switch (key) {
+    case 'GET health':
+      return json({ ok: true, storage: storageReady(), adminPassword: !!env('ADMIN_PASSWORD') })
+
     case 'GET content': {
-      const rows = await supabase('/rest/v1/portfolio_content?id=eq.1&select=content,updated_at')
+      const data = await readContent()
       // Cached on Vercel's CDN for a few seconds; browsers always revalidate.
-      return json({ content: rows?.[0]?.content ?? null, updatedAt: rows?.[0]?.updated_at ?? null }, 200, {
+      return json(data, 200, {
         'cache-control': 'public, max-age=0, must-revalidate',
         'cdn-cache-control': 'public, s-maxage=5, stale-while-revalidate=30',
       })
     }
 
     case 'POST auth/login': {
-      const { email, password } = await readJson(request)
-      if (!email || !password) throw new HttpError(400, 'Enter your email and password.')
-      let data
-      try {
-        data = await supabase('/auth/v1/token?grant_type=password', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ email, password }),
-        })
-      } catch (err) {
-        throw err.status === 400 ? new HttpError(401, 'Wrong email or password') : err
+      if (!env('ADMIN_PASSWORD')) throw new HttpError(503, 'Admin sign-in is not configured: set ADMIN_PASSWORD.')
+      const { password } = await readJson(request)
+      if (!passwordMatches(password)) {
+        await new Promise((r) => setTimeout(r, 600)) // slows down password guessing
+        throw new HttpError(401, 'Wrong password')
       }
-      const s = session(data)
-      await requireAdmin(new Request('http://x', { headers: { authorization: `Bearer ${s.access}` } }))
-      return json(s)
+      return json(session())
     }
 
     case 'POST auth/refresh': {
       const { refresh } = await readJson(request)
-      if (!refresh) throw new HttpError(401, 'Session expired. Sign in again.')
-      try {
-        const data = await supabase('/auth/v1/token?grant_type=refresh_token', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ refresh_token: refresh }),
-        })
-        return json(session(data))
-      } catch {
-        throw new HttpError(401, 'Session expired. Sign in again.')
-      }
+      if (!verifyToken(refresh, 'refresh')) throw new HttpError(401, 'Session expired. Sign in again.')
+      return json(session())
     }
 
-    case 'POST auth/logout': {
-      try {
-        await supabase('/auth/v1/logout', { method: 'POST', token: bearer(request) })
-      } catch {
-        /* already signed out */
-      }
+    case 'POST auth/logout':
       return json({ ok: true })
-    }
 
-    case 'GET auth/me': {
-      await requireAdmin(request)
+    case 'GET auth/me':
+      requireAdmin(request)
       return json({ ok: true })
-    }
 
-    case 'GET admin/content': {
-      const token = await requireAdmin(request)
-      const rows = await supabase('/rest/v1/portfolio_content?id=eq.1&select=content,updated_at', { token })
-      return json({ content: rows?.[0]?.content ?? null, updatedAt: rows?.[0]?.updated_at ?? null })
-    }
+    case 'GET admin/content':
+      requireAdmin(request)
+      return json(await readContent())
 
     case 'PUT admin/content': {
-      const token = await requireAdmin(request)
+      requireAdmin(request)
       const { content } = await readJson(request)
       if (!content?.profile || !Array.isArray(content.projects)) throw new HttpError(400, 'This is not portfolio content.')
-      const updatedAt = new Date().toISOString()
-      await supabase('/rest/v1/portfolio_content?on_conflict=id', {
-        method: 'POST',
-        token,
-        headers: { 'content-type': 'application/json', prefer: 'resolution=merge-duplicates,return=minimal' },
-        body: JSON.stringify({ id: 1, content, updated_at: updatedAt }),
-      })
-      return json({ ok: true, updatedAt })
+      await blob((a) =>
+        put(CONTENT, JSON.stringify(content), {
+          access: a,
+          contentType: 'application/json',
+          addRandomSuffix: false,
+          allowOverwrite: true,
+          cacheControlMaxAge: 60,
+        }),
+      )
+      return json({ ok: true, updatedAt: new Date().toISOString() })
     }
 
     case 'GET admin/files': {
-      const token = await requireAdmin(request)
+      requireAdmin(request)
       const folder = params.get('folder')
       if (!FOLDERS.has(folder)) throw new HttpError(400, 'Unknown folder.')
-      return json({ files: await listFiles(token, folder) })
+      return json({ files: await listFiles(folder) })
     }
 
-    case 'POST admin/files': {
-      const token = await requireAdmin(request)
-      return json(await uploadFile(request, token, params), 201)
-    }
+    case 'POST admin/files':
+      requireAdmin(request)
+      return json(await uploadFile(request, params), 201)
 
     case 'DELETE admin/files': {
-      const token = await requireAdmin(request)
+      requireAdmin(request)
       const { paths } = await readJson(request)
-      return json(await deleteFiles(token, paths))
+      if (!Array.isArray(paths) || !paths.length) return json({ deleted: 0 })
+      if (paths.length > 100 || !paths.every(safePath)) throw new HttpError(400, 'Invalid file path.')
+      await blob(() => del(paths))
+      return json({ deleted: paths.length })
     }
   }
   throw new HttpError(404, 'Not found')

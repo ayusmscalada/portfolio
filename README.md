@@ -1,17 +1,18 @@
 # Portfolio - Systems Atelier
 
-A simple, clear one-page portfolio with content managed from a hidden admin page. The site and its backend deploy together on Vercel: the backend runs as serverless functions under `/api` and keeps the data in Supabase. Built with React, Vite and CSS Modules.
+A simple, clear one-page portfolio with content managed from a hidden admin page. The site and its backend deploy together on Vercel: the backend runs as serverless functions under `/api` and keeps everything in Vercel Blob. Built with React, Vite and CSS Modules.
 
 ## How it fits together
 
 ```
-browser (site + admin)  ──►  /api  (server/app.js, Vercel function)  ──►  Supabase (database + file storage)
+browser (site + admin)  ──►  /api  (server/app.js, Vercel function)  ──►  Vercel Blob (content.json + files)
 ```
 
-- The browser only talks to `/api`. The Supabase settings exist only on the server.
-- The public site loads its content from `GET /api/content`. Open pages re-check every minute and whenever the tab comes back into view, so an admin save shows up on its own, within a few seconds.
-- The admin signs in through `/api/auth/login`. Every write (`/api/admin/…`) checks that the account is listed in `portfolio_admins`, and goes to Supabase with that admin's own token, so row-level security still applies.
-- Files are uploaded through the backend (max 4 MB each, a Vercel limit) and served from the public `portfolio` bucket.
+- The browser only talks to `/api`. The storage token and admin password exist only on the server.
+- The public site loads its content from `GET /api/content` (the `content.json` blob). Open pages re-check every minute and whenever the tab comes back into view, so an admin save shows up on its own, within a few seconds.
+- Images and résumés are stored as `projects/…` and `resumes/…` blobs and served by the backend at `/api/files/…`, so they work with public and private Blob stores.
+- The admin signs in with one password (`ADMIN_PASSWORD`) through `/api/auth/login` and gets a signed session token; every write (`/api/admin/…`) checks it. Changing the password signs every session out.
+- Uploads go through the backend (max 4 MB each, a Vercel limit).
 
 ## Run locally
 
@@ -22,41 +23,28 @@ npm run build
 npm run preview   # built site + /api on http://127.0.0.1:4173
 ```
 
-The dev server mounts the same backend handler, so there is one server and one port.
+The dev server mounts the same backend handler, so there is one server and one port. It needs `BLOB_READ_WRITE_TOKEN` and `ADMIN_PASSWORD` in `.env.local` (see [`.env.example`](.env.example)); copy the token from Vercel → Storage → your Blob store → **.env.local** tab. Local development uses the same Blob store as the live site, so saves made locally go live too.
 
 ## Personalize
 
 All personal content (profile, hero, about, skills, projects, experience, contact) is edited from the hidden admin page. `src/data/content.json` is the starter content and the fallback when the backend is unreachable. `src/data/sections.js` holds the section order, nav labels and icons. In text fields, `*word*` shows in the accent colour and `{years}` inserts the years since `profile.since`.
 
-## Supabase setup (once)
-
-1. Create a Supabase project. In **SQL Editor**, run [`supabase/setup.sql`](supabase/setup.sql). It creates:
-   - the `portfolio_content` table (public read, admin write),
-   - the `portfolio_admins` table,
-   - the public `portfolio` bucket for images and résumés.
-2. **Authentication → Users → Add user**: create your login (tick *Auto Confirm User*). Then run the `insert into public.portfolio_admins …` line at the bottom of the SQL file with your email. Turn off public sign-ups in **Authentication → Sign In / Providers**.
-3. Put the **Project URL** and the **publishable key** (Project Settings → API Keys) in `.env.local` for local development:
-
-   ```
-   SUPABASE_URL=https://xxxx.supabase.co
-   SUPABASE_ANON_KEY=sb_publishable_...
-   ```
-
-   Restart `npm run dev` after changing them.
-
 ## Deploy on Vercel
 
 1. Import the repository in Vercel. It detects Vite; keep the defaults (build `npm run build`, output `dist`). The `api/` folder becomes the backend automatically, and [`vercel.json`](vercel.json) routes `/api/*` to it and everything else to the site.
-2. **Settings → Environment Variables:** add `SUPABASE_URL` and `SUPABASE_ANON_KEY` (same values as `.env.local`). They are used only by the backend.
-3. Deploy. Check `https://<your-site>/api/health`: it should say `"configured": true`.
+2. **Storage → Create → Blob**, and connect the store to the project. Vercel adds `BLOB_READ_WRITE_TOKEN` for you.
+3. **Settings → Environment Variables:** add `ADMIN_PASSWORD`.
+4. Deploy (or **Redeploy** after changing variables: they only apply to new deployments). Check `https://<your-site>/api/health`: it should say `"storage": true` and `"adminPassword": true`.
 
 Content changes need no redeploy: save in the admin and the live site picks them up.
+
+**Moving from Supabase (once):** with `BLOB_READ_WRITE_TOKEN`, `SUPABASE_URL` and `SUPABASE_ANON_KEY` in `.env.local`, run `npm run import:supabase`. It copies the saved content and every image or résumé it links to into Blob and rewrites the links. Supabase is not used after that.
 
 **Backend on a separate domain (optional):** if you deploy the backend as its own Vercel project, set `ALLOWED_ORIGINS=https://<your-site>` on the backend and `API_URL=https://<your-backend>` on the site (the site needs a rebuild after changing `API_URL`).
 
 ## Admin page
 
-Open `/<admin path>` (it is not linked anywhere, and the bundle stores only a hash of it) and sign in with your admin account. The page has a form for every section, and a live preview that updates as you type.
+Open `/<admin path>` (it is not linked anywhere, and the bundle stores only a hash of it) and enter the admin password. The page has a form for every section, and a live preview that updates as you type.
 
 - **Saving:** press **Save** (or Ctrl/⌘ + S). The backend stores it; visitors see it within seconds, with no rebuild or redeploy.
 - **First save:** if nothing is stored yet, the admin starts from the starter content and the first save publishes it.

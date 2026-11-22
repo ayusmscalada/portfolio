@@ -1,7 +1,7 @@
 /**
  * Admin client for the backend (server/app.js): sign-in, content, and files.
- * The browser never talks to Supabase directly; the backend does, with the
- * signed-in admin's token, and Supabase row-level security still applies.
+ * Everything is stored in Vercel Blob behind the backend; files are served
+ * from /api/files/<path>. Sign-in is a single admin password (ADMIN_PASSWORD).
  */
 import { API_BASE } from '@/lib/api.js'
 
@@ -67,9 +67,9 @@ async function token() {
   return session.access
 }
 
-/** Signs in; the backend also confirms the account is a portfolio admin. */
-export async function signIn(email, password) {
-  keep(await call('auth/login', { method: 'POST', body: { email, password }, auth: false }))
+/** Signs in with the admin password (ADMIN_PASSWORD on the backend). */
+export async function signIn(password) {
+  keep(await call('auth/login', { method: 'POST', body: { password }, auth: false }))
   return session.email
 }
 
@@ -151,7 +151,7 @@ export async function uploadResume(file) {
 
 // Storage path ("projects/…") of a public URL in our bucket, else null.
 const pathOf = (url) => {
-  const m = typeof url === 'string' && /\/storage\/v1\/object\/public\/portfolio\/(projects\/[^?#/]+)$/.exec(url)
+  const m = typeof url === 'string' && /\/api\/files\/(projects\/[^?#/]+)$/.exec(url)
   return m ? decodeURIComponent(m[1]) : null
 }
 
