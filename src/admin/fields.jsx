@@ -490,13 +490,13 @@ export function ResumeManager() {
     <div className={s.files}>
       <div className={s.inline}>
         <button type="button" className={s.btn} disabled={busy} onClick={() => fileRef.current?.click()}>
-          {Icon.upload} {busy ? 'Uploading…' : 'Upload resume'}
+          {Icon.upload} {busy ? 'Uploading…' : 'Upload Resume'}
         </button>
         <span className={s.hint}>PDF or Word, up to 4 MB.</span>
         <input ref={fileRef} type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden onChange={(e) => onFile(e.target.files?.[0])} />
       </div>
 
-      {loadError && <p className={s.error}>Could not list resumes: {loadError}</p>}
+      {loadError && <p className={s.error}>Could not list Resumes: {loadError}</p>}
 
       <ul className={s.fileList} aria-busy={files == null}>
         {files == null && <li className={s.fileEmpty}>Loading…</li>}
@@ -528,8 +528,8 @@ export function ResumeManager() {
             <label className={s.filePick}>
               <input type="radio" name="resume" checked={!current} onChange={() => choose('')} />
               <span className={s.fileMeta}>
-                <strong>No resume</strong>
-                <span>Hide the resume button on the site</span>
+                <strong>No Resume</strong>
+                <span>Hide the Resume button on the site</span>
               </span>
             </label>
           </li>
@@ -538,7 +538,7 @@ export function ResumeManager() {
 
       {external && (
         <p className={s.hint}>
-          The site currently links to <code>{current}</code>, which is not a file in this list. Pick a file above or “No resume” to replace it.
+          The site currently links to <code>{current}</code>, which is not a file in this list. Pick a file above or “No Resume” to replace it.
         </p>
       )}
     </div>
